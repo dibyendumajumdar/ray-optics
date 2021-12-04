@@ -193,7 +193,7 @@ def compute_first_order(opt_model, stop, wvl):
     p_ray, q_ray = paraxial_trace(seq_model.path(wl=wvl), start,
                                   [1., 0.], [0., uq0])
 
-    n_k = seq_model.z_dir[-1]*seq_model.central_rndx(-1)
+    n_k: float = seq_model.z_dir[-1]*seq_model.central_rndx(-1)
     img = -2 if seq_model.get_num_surfaces() > 2 else -1
     ak1 = p_ray[img][ht]
     bk1 = q_ray[img][ht]

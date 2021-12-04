@@ -7,6 +7,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
+from typing import Any, Iterator
 
 import numpy as np
 from numpy.linalg import norm
@@ -18,8 +19,10 @@ from rayoptics.elem.transform import (transform_before_surface,
 from rayoptics.optical.model_constants import Intfc, Gap, Tfrm, Indx, Zdir
 from .traceerror import (TraceMissedSurfaceError, TraceTIRError,
                          TraceEvanescentRayError)
+from ..typing import Vector3
 
-def bend(d_in, normal, n_in, n_out):
+
+def bend(d_in: Vector3, normal: Vector3, n_in: float, n_out: float) -> Vector3:
     """ refract incoming direction, d_in, about normal """
     try:
         normal_len = norm(normal)
@@ -50,7 +53,7 @@ def phase(ifc, inc_pt, d_in, normal, z_dir, wvl, n_in, n_out):
         raise TraceEvanescentRayError(ifc, inc_pt, d_in, normal, n_in, n_out)
 
 
-def trace(seq_model, pt0, dir0, wvl, **kwargs):
+def trace(seq_model, pt0: Vector3, dir0: Vector3, wvl: float, **kwargs):
     """ fundamental raytrace function
 
     Args:
@@ -83,7 +86,7 @@ def trace(seq_model, pt0, dir0, wvl, **kwargs):
     return trace_raw(path, pt0, dir0, wvl, **kwargs)
 
 
-def trace_raw(path, pt0, dir0, wvl, eps=1.0e-12, **kwargs):
+def trace_raw(path: Iterator[Any], pt0: Vector3, dir0: Vector3, wvl: float, eps: float=1.0e-12, **kwargs):
     """ fundamental raytrace function
 
     Args:

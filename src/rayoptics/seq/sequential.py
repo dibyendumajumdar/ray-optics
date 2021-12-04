@@ -8,6 +8,7 @@
 
 import itertools
 import logging
+from typing import Iterator, Tuple, List, Optional
 
 from anytree import Node
 
@@ -23,6 +24,9 @@ from opticalglass import glasserror as ge
 import numpy as np
 from math import copysign, sqrt
 from rayoptics.util.misc_math import isanumber
+from .gap import Gap
+from .interface import Interface
+from ..typing import Transform3, ZDir
 
 
 class SequentialModel:
@@ -68,15 +72,15 @@ class SequentialModel:
 
     def __init__(self, opt_model, do_init=True, **kwargs):
         self.opt_model = opt_model
-        self.ifcs = []
-        self.gaps = []
-        self.gbl_tfrms = []
-        self.lcl_tfrms = []
-        self.z_dir = []
-        self.stop_surface = None
-        self.cur_surface = None
-        self.wvlns = []
-        self.rndx = []
+        self.ifcs: List[Interface] = []
+        self.gaps: List[Gap] = []
+        self.gbl_tfrms: List[Transform3] = []
+        self.lcl_tfrms: List[Transform3] = []
+        self.z_dir: List[ZDir] = []
+        self.stop_surface: Optional[int] = None
+        self.cur_surface: Optional[int] = None
+        self.wvlns: List[float] = []
+        self.rndx: List[List[float]] = []
         self.do_apertures = True
         if do_init:
             self._initialize_arrays()
@@ -96,7 +100,7 @@ class SequentialModel:
         # add object interface
         self.ifcs.append(surface.Surface('Obj', interact_mode='dummy'))
 
-        tfrm = np.identity(3), np.array([0., 0., 0.])
+        tfrm: Transform3 = np.identity(3), np.array([0., 0., 0.])
         self.gbl_tfrms.append(tfrm)
         self.lcl_tfrms.append(tfrm)
 
@@ -119,7 +123,7 @@ class SequentialModel:
     def get_num_surfaces(self):
         return len(self.ifcs)
 
-    def path(self, wl=None, start=None, stop=None, step=1):
+    def path(self, wl=None, start=None, stop=None, step=1) -> Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]]:
         """ returns an iterable path tuple for a range in the sequential model
 
         Args:
@@ -154,7 +158,7 @@ class SequentialModel:
                                      self.z_dir[start:stop:step])
         return path
 
-    def reverse_path(self, wl=None, start=None, stop=None, step=-1):
+    def reverse_path(self, wl=None, start=None, stop=None, step=-1) -> Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]]:
         """ returns an iterable path tuple for a range in the sequential model
     
         Args:

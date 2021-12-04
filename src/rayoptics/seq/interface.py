@@ -10,6 +10,9 @@
 
 
 from enum import Enum, auto
+from typing import Optional
+
+from rayoptics.typing import InteractMode, Vector3, ZDir, IPhaseElement, IDecenterData
 
 
 class InteractionMode(Enum):
@@ -46,8 +49,9 @@ class Interface:
         decenter: :class:`~rayoptics.elem.surface.DecenterData` for the interface, if specified
         max_aperture: the maximum aperture radius on the interface
     """
-    def __init__(self, interact_mode='transmit', delta_n=0.0,
-                 max_ap=1.0, decenter=None, phase_element=None, **kwargs):
+    def __init__(self, interact_mode: InteractMode='transmit', delta_n=0.0,
+                 max_ap=1.0, decenter: Optional[IDecenterData] = None,
+                 phase_element: Optional[IPhaseElement] = None, **kwargs):
         self.interact_mode = interact_mode
         self.delta_n = delta_n
         self.decenter = decenter
@@ -55,7 +59,7 @@ class Interface:
         if phase_element is not None:
             self.phase_element = phase_element
 
-    def update(self):
+    def update(self) -> None:
         if self.decenter is not None:
             self.decenter.update()
 
@@ -92,11 +96,11 @@ class Interface:
     def surface_od(self):
         pass
 
-    def set_max_aperture(self, max_ap):
+    def set_max_aperture(self, max_ap: float):
         """ max_ap is the max aperture radius """
         self.max_aperture = max_ap
 
-    def intersect(self, p0, d, eps=1.0e-12, z_dir=1):
+    def intersect(self, p0: Vector3, d: Vector3, eps: float = 1.0e-12, z_dir: ZDir = 1):
         ''' Intersect an :class:`~.Interface`, starting from an arbitrary point.
 
         Args:
@@ -113,7 +117,7 @@ class Interface:
         '''
         pass
 
-    def normal(self, p):
+    def normal(self, p: Vector3):
         """Returns the unit normal of the interface at point *p*. """
         pass
 
