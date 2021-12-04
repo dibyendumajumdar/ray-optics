@@ -311,21 +311,21 @@ class OpticalModel:
                 t_air = t_after
             g, ag, ag_node = ele.create_air_gap(t=t_air, label=gap_label)
             if not ins_prev_gap:
-                seq[-1][mc.Gap] = g
+                seq[-1][mc.kGap] = g
             elm.append(ag)
             ag_node.parent = self.part_tree.root_node
         else:
             # replacing an existing node. need to hook new chunk final
             # interface to the existing gap and following (air gap) element
             g = sm.gaps[sm.cur_surface+1]
-            seq[-1][mc.Gap] = g
+            seq[-1][mc.kGap] = g
             ag, ag_node = self.part_tree.parent_object(g, '#airgap')            # ag.idx = seq[-1][mc.Intfc]
 
         for sg in seq:
             if ins_prev_gap:
-                gap, g = g, sg[mc.Gap]
+                gap, g = g, sg[mc.kGap]
             else:
-                gap = sg[mc.Gap]
+                gap = sg[mc.kGap]
             sm.insert(sg[mc.Intfc], gap, prev=ins_prev_gap)
 
         for e in elm:

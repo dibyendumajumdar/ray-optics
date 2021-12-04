@@ -9,9 +9,9 @@
 """
 
 # sequential ray trace data structures
-Intfc, Gap, Tfrm, Indx, Zdir = range(5)
+Intfc, kGap, Tfrm, Indx, Zdir = range(5)
 
-Surf, Gap = range(2)
+Surf, kGap = range(2)
 
 # paraxial optics data structures
 # 4 parts of paraxial model: axial ray, principal ray,
