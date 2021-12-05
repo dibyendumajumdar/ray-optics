@@ -28,6 +28,8 @@
 
 from enum import Enum, auto
 from math import sqrt
+from typing import Tuple
+
 import numpy as np
 
 from rayoptics.seq import interface
@@ -35,6 +37,7 @@ from . import profiles
 import transforms3d as t3d
 from rayoptics.optical.model_enums import get_decenter_for_type
 from rayoptics.raytr.traceerror import TraceError
+from ..typing import Vector3
 
 
 class InteractionMode(Enum):
@@ -194,14 +197,15 @@ class Surface(interface.Interface):
                 prf.append([sag, sd_upr])
             return prf
 
-    def intersect(self, p0, d, eps=1.0e-12, z_dir=1.0):
+    def intersect(self, p0, d, eps=1.0e-12, z_dir=1.0)\
+            -> Tuple[float, Vector3]:
         return self.profile.intersect(p0, d, eps, z_dir)
 
     def normal(self, p):
         return self.profile.normal(p)
 
 
-class DecenterData():
+class DecenterData:
     """ Maintains data and actions for position and orientation changes.
 
         - 'decenter': pos and orientation applied prior to surface

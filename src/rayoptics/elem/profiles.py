@@ -7,10 +7,13 @@
 
 .. codeauthor: Michael J. Hayford
 """
+from typing import Tuple
+
 import numpy as np
 from math import sqrt, copysign, sin, atan2
 from scipy import optimize
 
+from rayoptics.typing import Vector3, ZDir
 from rayoptics.util.misc_math import normalize
 from rayoptics.raytr.traceerror import TraceError, TraceMissedSurfaceError
 
@@ -82,7 +85,7 @@ class SurfaceProfile:
         """Apply *scale_factor* to the profile definition. """
         pass
 
-    def intersect(self, p0, d, eps, z_dir):
+    def intersect(self, p0: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         Args:
@@ -99,7 +102,7 @@ class SurfaceProfile:
         '''
         return self.intersect_spencer(p0, d, eps, z_dir)
 
-    def intersect_welford(self, p, d, eps, z_dir):
+    def intersect_welford(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         From Welford, Aberrations of Optical Systems (ISBN-10: 0852745648),
@@ -141,7 +144,7 @@ class SurfaceProfile:
         s1 = norm(p1 - p)
         return s1, p1
 
-    def intersect_spencer(self, p0, d, eps, z_dir):
+    def intersect_spencer(self, p0: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         From Spencer and Murty, `General Ray-Tracing Procedure
@@ -280,7 +283,7 @@ class Spherical(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def intersect(self, p, d, eps, z_dir):
+    def intersect(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersection with a sphere, starting from an arbitrary point. '''
 
 #        return super().intersect(p, d, eps, z_dir)
@@ -460,7 +463,7 @@ class Conic(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def intersect(self, p, d, eps, z_dir):
+    def intersect(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersection with a conic, starting from an arbitrary point.'''
 
         # For quadratic equation ax**2 + bx + c = 0:

@@ -4,14 +4,14 @@ import numpy as np
 
 Vector3 = np.ndarray
 Vector2 = np.ndarray
-Transform3 = Tuple[Vector3, Vector3]
 Matrix3 = np.ndarray
+Transform3 = Tuple[Optional[Matrix3], Vector3]
 
 DCenterTypes = Literal['decenter', 'reverse', 'dec and return', 'bend']
 InteractMode = Literal['transmit', 'reflect', 'dummy']
 ZDir = Literal[1, -1]
-#
-#
+
+
 class IDecenterData(Protocol):
     dtype: DCenterTypes  # 'decenter', 'reverse', 'dec and return', 'bend'
     dec: Vector3  # x, y, z vertex decenter
@@ -25,11 +25,15 @@ class IDecenterData(Protocol):
     def apply_scale_factor(self, scale_factor: float):
         ...
 
-    def tform_before_surf(self) -> Tuple[Optional[Matrix3], Vector3]:
+    def tform_before_surf(self) -> Transform3:
         ...
 
-    def tform_after_surf(self) -> Tuple[Optional[Matrix3], Vector3]:
+    def tform_after_surf(self) -> Transform3:
         ...
+
+
+class IDecenterable(Protocol):
+    decenter: IDecenterData
 
 
 class IPhaseElement(Protocol):

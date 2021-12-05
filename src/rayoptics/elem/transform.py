@@ -10,8 +10,10 @@
 
 import numpy as np
 
+from rayoptics.typing import IDecenterable
 
-def forward_transform(s1, zdist, s2):
+
+def forward_transform(s1: IDecenterable, zdist: float, s2: IDecenterable):
     """ generate transform rotation and translation from
         s1 coords to s2 coords """
 
@@ -41,7 +43,7 @@ def forward_transform(s1, zdist, s2):
     return r_cascade, t_orig
 
 
-def reverse_transform(s1, zdist, s2):
+def reverse_transform(s1: IDecenterable, zdist: float, s2: IDecenterable):
     """ generate transform rotation and translation from
         s2 coords to s1 coords """
 
@@ -85,7 +87,7 @@ def transfer_coords(r_seg, t_seg, pt_s1, dir_s1):
     return rt.dot(pt_s1 - t_seg), rt.dot(dir_s1)
 
 
-def transform_before_surface(interface, ray_seg):
+def transform_before_surface(interface: IDecenterable, ray_seg):
     """Transform ray_seg from interface to previous seg.
 
     Args:
@@ -112,7 +114,7 @@ def transform_before_surface(interface, ray_seg):
     return b4_pt, b4_dir
 
 
-def transform_after_surface(interface, ray_seg):
+def transform_after_surface(interface: IDecenterable, ray_seg):
     """Transform ray_seg from interface to following seg.
 
     Args:

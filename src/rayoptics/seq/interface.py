@@ -10,7 +10,7 @@
 
 
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, Tuple
 
 from rayoptics.typing import InteractMode, Vector3, ZDir, IPhaseElement, IDecenterData
 
@@ -100,7 +100,8 @@ class Interface:
         """ max_ap is the max aperture radius """
         self.max_aperture = max_ap
 
-    def intersect(self, p0: Vector3, d: Vector3, eps: float = 1.0e-12, z_dir: ZDir = 1):
+    def intersect(self, p0: Vector3, d: Vector3, eps: float = 1.0e-12, z_dir: ZDir = 1)\
+            -> Tuple[float, Vector3]:
         ''' Intersect an :class:`~.Interface`, starting from an arbitrary point.
 
         Args:
@@ -117,7 +118,7 @@ class Interface:
         '''
         pass
 
-    def normal(self, p: Vector3):
+    def normal(self, p: Vector3) -> Vector3:
         """Returns the unit normal of the interface at point *p*. """
         pass
 

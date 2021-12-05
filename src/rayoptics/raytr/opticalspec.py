@@ -9,6 +9,8 @@
 """
 
 import math
+from typing import Tuple, List, Optional
+
 import numpy as np
 
 from rayoptics.parax.firstorder import compute_first_order, list_parax_trace
@@ -17,6 +19,7 @@ from rayoptics.optical import model_enums
 import rayoptics.optical.model_constants as mc
 from opticalglass.spectral_lines import get_wavelength
 import rayoptics.util.colour_system as cs
+from rayoptics.typing import Vector2, Vector3
 from rayoptics.util import colors
 srgb = cs.cs_srgb
 
@@ -327,6 +330,72 @@ class PupilSpec:
         self.key = ape_key
 
 
+class Field:
+    """ a single field point, largely a data container
+
+    Attributes:
+        x: x field component
+        y: y field component
+        vux: +x vignetting factor
+        vuy: +y vignetting factor
+        vlx: -x vignetting factor
+        vly: -y vignetting factor
+        wt: field weight
+        aim_pt: x, y chief ray coords on the paraxial entrance pupil plane
+        chief_ray: ray package for the ray from the field point throught the
+                   center of the aperture stop, traced in the central
+                   wavelength
+        ref_sphere: a tuple containing (image_pt, ref_dir, ref_sphere_radius)
+
+    """
+
+    def __init__(self, x=0., y=0., wt=1.):
+        self.x: float = x
+        self.y: float = y
+        self.vux: float = 0.0
+        self.vuy: float = 0.0
+        self.vlx: float = 0.0
+        self.vly: float = 0.0
+        self.wt: float = wt
+        self.aim_pt: Vector2 = None
+        self.chief_ray = None
+        self.ref_sphere = None
+
+    def __json_encode__(self):
+        attrs = dict(vars(self))
+        items = ['chief_ray', 'ref_sphere', 'pupil_rays']
+        for item in items:
+            if item in attrs:
+                del attrs[item]
+        return attrs
+
+    def __str__(self):
+        return "{}, {}".format(self.x, self.y)
+
+    def __repr__(self):
+        return "Field(x={}, y={}, wt={})".format(self.x, self.y, self.wt)
+
+    def update(self):
+        self.chief_ray = None
+        self.ref_sphere = None
+
+    def apply_vignetting(self, pupil):
+        vig_pupil = pupil[:]
+        if pupil[0] < 0.0:
+            if self.vlx != 0.0:
+                vig_pupil[0] *= (1.0 - self.vlx)
+        else:
+            if self.vux != 0.0:
+                vig_pupil[0] *= (1.0 - self.vux)
+        if pupil[1] < 0.0:
+            if self.vly != 0.0:
+                vig_pupil[1] *= (1.0 - self.vly)
+        else:
+            if self.vuy != 0.0:
+                vig_pupil[1] *= (1.0 - self.vuy)
+        return vig_pupil
+
+
 class FieldSpec:
     """ Field of view specification
 
@@ -338,12 +407,13 @@ class FieldSpec:
 
     """
 
-    def __init__(self, parent, key=('object', 'angle'), value=0., flds=[0.],
+    def __init__(self, parent: OpticalSpecs, key=('object', 'angle'), value: float = 0., flds: List[float] = [0.],
                  is_relative=False, do_init=True, **kwargs):
-        self.optical_spec = parent
-        self.key = 'field', key[0], key[1]
-        self.value = value
-        self.is_relative = is_relative
+        self.optical_spec: OpticalSpecs = parent
+        self.key: Tuple[str, str, str] = 'field', key[0], key[1]
+        self.value: float = value
+        self.is_relative: bool = is_relative
+        self.fields: List[Field]
         if do_init:
             self.set_from_list(flds)
         else:
@@ -367,7 +437,7 @@ class FieldSpec:
     def __str__(self):
         return "key={}, max field={}".format(self.key, self.max_field()[0])
 
-    def set_from_list(self, flds):
+    def set_from_list(self, flds: List[float]) -> None:
         self.fields = [Field() for f in range(len(flds))]
         for i, f in enumerate(self.fields):
             f.y = flds[i]
@@ -440,8 +510,8 @@ class FieldSpec:
                         self.value = fod.img_ht
         self.key = fld_key
 
-    def obj_coords(self, fld):
-        fld_coord = np.array([fld.x, fld.y, 0.0])
+    def obj_coords(self, fld: Field):
+        fld_coord: Vector3 = np.array([fld.x, fld.y, 0.0])
         if self.is_relative:
             fld_coord *= self.value
 
@@ -460,7 +530,7 @@ class FieldSpec:
                 obj_pt = fod.red*img_pt
         return obj_pt
 
-    def max_field(self):
+    def max_field(self) -> Tuple[float, Optional[int]]:
         """ calculates the maximum field of view
 
         Returns:
@@ -479,72 +549,6 @@ class FieldSpec:
         return max_fld_value, max_fld
 
 
-class Field:
-    """ a single field point, largely a data container
-
-    Attributes:
-        x: x field component
-        y: y field component
-        vux: +x vignetting factor
-        vuy: +y vignetting factor
-        vlx: -x vignetting factor
-        vly: -y vignetting factor
-        wt: field weight
-        aim_pt: x, y chief ray coords on the paraxial entrance pupil plane
-        chief_ray: ray package for the ray from the field point throught the
-                   center of the aperture stop, traced in the central
-                   wavelength
-        ref_sphere: a tuple containing (image_pt, ref_dir, ref_sphere_radius)
-
-    """
-
-    def __init__(self, x=0., y=0., wt=1.):
-        self.x = x
-        self.y = y
-        self.vux = 0.0
-        self.vuy = 0.0
-        self.vlx = 0.0
-        self.vly = 0.0
-        self.wt = wt
-        self.aim_pt = None
-        self.chief_ray = None
-        self.ref_sphere = None
-
-    def __json_encode__(self):
-        attrs = dict(vars(self))
-        items = ['chief_ray', 'ref_sphere', 'pupil_rays']
-        for item in items:
-            if item in attrs:
-                del attrs[item]
-        return attrs
-
-    def __str__(self):
-        return "{}, {}".format(self.x, self.y)
-
-    def __repr__(self):
-        return "Field(x={}, y={}, wt={})".format(self.x, self.y, self.wt)
-
-    def update(self):
-        self.chief_ray = None
-        self.ref_sphere = None
-
-    def apply_vignetting(self, pupil):
-        vig_pupil = pupil[:]
-        if pupil[0] < 0.0:
-            if self.vlx != 0.0:
-                vig_pupil[0] *= (1.0 - self.vlx)
-        else:
-            if self.vux != 0.0:
-                vig_pupil[0] *= (1.0 - self.vux)
-        if pupil[1] < 0.0:
-            if self.vly != 0.0:
-                vig_pupil[1] *= (1.0 - self.vly)
-        else:
-            if self.vuy != 0.0:
-                vig_pupil[1] *= (1.0 - self.vuy)
-        return vig_pupil
-
-
 class FocusRange:
     """ Focus range specification
 
@@ -554,9 +558,9 @@ class FocusRange:
                        position
     """
 
-    def __init__(self, focus_shift=0.0, defocus_range=0.0):
-        self.focus_shift = focus_shift
-        self.defocus_range = defocus_range
+    def __init__(self, focus_shift: float =0.0, defocus_range: float =0.0):
+        self.focus_shift: float = focus_shift
+        self.defocus_range: float = defocus_range
 
     def __repr__(self):
         return ("FocusRange(focus_shift={}, defocus_range={})"
