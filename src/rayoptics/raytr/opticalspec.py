@@ -178,18 +178,8 @@ class OpticalSpecs:
         foc = self.defocus.get_focus(fr)
         return fld, wvl, foc
 
-    def obj_coords(self, fld: 'Field', obj_dist: float, enp_dist: float, red: float) -> Optional[Vector3]:
-        """ calculates object coordinates
-
-        Args:
-            fld (Field): Field
-            obj_dist (float): object distance
-            enp_dist (float): entrance pupil distance from 1st interface
-            red (float): reduction ratio
-        Returns:
-            Optional[Vector3]
-        """
-        return self.field_of_view.obj_coords(fld, obj_dist, enp_dist, red)
+    def obj_coords(self, fld):
+        return self.field_of_view.obj_coords(fld)
 
     def list_first_order_data(self):
         self.parax_data.fod.list_first_order_data()
@@ -520,34 +510,24 @@ class FieldSpec:
                         self.value = fod.img_ht
         self.key = fld_key
 
-    def obj_coords(self, fld: Field, obj_dist: float, enp_dist: float, red: float) -> Optional[Vector3]:
-        """ calculates object coordinates
-
-        Args:
-            fld (Field): Field
-            obj_dist (float): object distance
-            enp_dist (float): entrance pupil distance from 1st interface
-            red (float): reduction ratio
-        Returns:
-            Optional[Vector3]
-        """
+    def obj_coords(self, fld: Field):
         fld_coord: Vector3 = np.array([fld.x, fld.y, 0.0])
         if self.is_relative:
             fld_coord *= self.value
 
         field, obj_img_key, value_key = self.key
-        obj_pt: Vector3
 
+        fod = self.optical_spec.parax_data.fod
         if obj_img_key == 'object':
             if value_key == 'angle':
-                dir_tan: Vector3 = np.tan(np.deg2rad(fld_coord))
-                obj_pt = -dir_tan*(obj_dist+enp_dist)
+                dir_tan = np.tan(np.deg2rad(fld_coord))
+                obj_pt = -dir_tan*(fod.obj_dist+fod.enp_dist)
             elif value_key == 'height':
                 obj_pt = fld_coord
         elif obj_img_key == 'image':
             if value_key == 'height':
                 img_pt = fld_coord
-                obj_pt = red*img_pt
+                obj_pt = fod.red*img_pt
         return obj_pt
 
     def max_field(self) -> Tuple[float, Optional[int]]:

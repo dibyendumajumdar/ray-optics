@@ -155,7 +155,7 @@ def trace_base(opt_model, pupil, fld, wvl, **kwargs):
         aim_pt = fld.aim_pt
     pt1 = np.array([eprad*vig_pupil[0]+aim_pt[0], eprad*vig_pupil[1]+aim_pt[1],
                     fod.obj_dist+fod.enp_dist])
-    pt0 = osp.obj_coords(fld, fod.obj_dist, fod.enp_dist, fod.red)
+    pt0 = osp.obj_coords(fld)
     dir0 = pt1 - pt0
     length = norm(dir0)
     dir0 = dir0/length
@@ -207,7 +207,7 @@ def iterate_ray(opt_model, ifcx, xy_target, fld, wvl, **kwargs):
     fod = osp.parax_data.fod
     dist = fod.obj_dist + fod.enp_dist
 
-    pt0 = osp.obj_coords(fld, fod.obj_dist, fod.enp_dist, fod.red)
+    pt0 = osp.obj_coords(fld)
     if ifcx is not None:
         if pt0[0] == 0.0 and xy_target[0] == 0.0:
             # do 1D iteration if field and target points are zero in x
