@@ -28,7 +28,7 @@
 
 from enum import Enum, auto
 from math import sqrt
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 
@@ -37,7 +37,7 @@ from . import profiles
 import transforms3d as t3d
 from rayoptics.optical.model_enums import get_decenter_for_type
 from rayoptics.raytr.traceerror import TraceError
-from ..typing import Vector3
+from rayoptics.typing import Vector3, Transform3
 
 
 class InteractionMode(Enum):
@@ -263,7 +263,7 @@ class DecenterData:
         self.dec *= scale_factor
         self.rot_pt *= scale_factor
 
-    def tform_before_surf(self):
+    def tform_before_surf(self) -> Tuple[Optional[Transform3], Vector3]:
         if self.dtype != 'reverse':
             return self.rot_mat, self.dec
         else:

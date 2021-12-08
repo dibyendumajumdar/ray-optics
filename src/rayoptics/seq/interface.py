@@ -10,9 +10,9 @@
 
 
 from enum import Enum, auto
-from typing import Optional, Tuple
+from typing import Tuple
 
-from rayoptics.typing import InteractMode, Vector3, ZDir, IPhaseElement, IDecenterData
+from rayoptics.typing import InteractMode, Vector3, ZDir
 
 
 class InteractionMode(Enum):
@@ -50,8 +50,8 @@ class Interface:
         max_aperture: the maximum aperture radius on the interface
     """
     def __init__(self, interact_mode: InteractMode='transmit', delta_n=0.0,
-                 max_ap=1.0, decenter: Optional[IDecenterData] = None,
-                 phase_element: Optional[IPhaseElement] = None, **kwargs):
+                 max_ap=1.0, decenter=None,
+                 phase_element=None, **kwargs):
         self.interact_mode = interact_mode
         self.delta_n = delta_n
         self.decenter = decenter
