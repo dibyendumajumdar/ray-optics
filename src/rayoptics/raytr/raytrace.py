@@ -88,7 +88,7 @@ def trace(seq_model, pt0: Vector3, dir0: Vector3, wvl: float, **kwargs):
     return trace_raw(path, pt0, dir0, wvl, **kwargs)
 
 
-def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]],
+def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
               pt0: Vector3,
               dir0: Vector3,
               wvl: float,
@@ -139,8 +139,8 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]],
             return s <= last_surf if include_last_surf else s < last_surf
 
     # type decl
-    obj: Tuple[Interface, Gap, Transform3, int, ZDir]
-    before: Tuple[Interface, Gap, Transform3, int, ZDir]
+    obj: Tuple[Interface, Gap, Transform3, float, ZDir]
+    before: Tuple[Interface, Gap, Transform3, float, ZDir]
     srf_obj: Interface
 
     dst_b4: float
@@ -172,7 +172,7 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]],
     while True:
         try:
             # type decls
-            after: Tuple[Interface, Gap, Transform3, int, ZDir]
+            after: Tuple[Interface, Gap, Transform3, float, ZDir]
             rt: Matrix3
             t: Vector3
             b4_pt: Vector3

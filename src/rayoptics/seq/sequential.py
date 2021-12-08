@@ -123,7 +123,7 @@ class SequentialModel:
     def get_num_surfaces(self):
         return len(self.ifcs)
 
-    def path(self, wl=None, start=None, stop=None, step=1) -> Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]]:
+    def path(self, wl=None, start=None, stop=None, step=1) -> Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]]:
         """ returns an iterable path tuple for a range in the sequential model
 
         Args:
@@ -158,7 +158,7 @@ class SequentialModel:
                                      self.z_dir[start:stop:step])
         return path
 
-    def reverse_path(self, wl=None, start=None, stop=None, step=-1) -> Iterator[Tuple[Interface, Gap, Transform3, int, ZDir]]:
+    def reverse_path(self, wl=None, start=None, stop=None, step=-1) -> Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]]:
         """ returns an iterable path tuple for a range in the sequential model
     
         Args:
