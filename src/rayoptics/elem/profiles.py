@@ -22,7 +22,7 @@ def resize_list(lst, new_length, null_item=None):
     return lst + [null_item for item in range(new_length - len(lst))]
 
 
-def intersect_parabola(cv, p, d, z_dir=1.0):
+def intersect_parabola(cv: float, p: Vector3, d: Vector3, z_dir=1.0):
     ''' Intersect a parabolid, starting from an arbitrary point.
 
     Args:
@@ -55,19 +55,19 @@ class SurfaceProfile:
     def update(self):
         return self
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         """Returns the value of the profile surface function at point *p*. """
         pass
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         "Returns the gradient of the profile surface function at point *p*. "
         pass
 
-    def normal(self, p):
+    def normal(self, p: Vector3) -> Vector3:
         """Returns the unit normal of the profile at point *p*. """
         return normalize(self.df(p))
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         """Returns the sagitta (z coordinate) of the surface at x, y. """
         pass
 
@@ -303,14 +303,14 @@ class Spherical(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         return p[2] - 0.5*self.cv*(np.dot(p, p))
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         return np.array(
                 [-self.cv*p[0], -self.cv*p[1], 1.0-self.cv*p[2]])
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         if self.cv != 0.0:
             r = 1/self.cv
             try:
@@ -481,18 +481,18 @@ class Conic(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         return p[2] - 0.5*self.cv*(p[0]*p[0] +
                                    p[1]*p[1] +
                                    (self.cc+1.0)*p[2]*p[2])
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         return np.array(
                 [-self.cv*p[0],
                  -self.cv*p[1],
                  1.0-(self.cc+1.0)*self.cv*p[2]])
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         r2 = x*x + y*y
         try:
             z = self.cv*r2/(1. + sqrt(1. - (self.cc+1.0)*self.cv*self.cv*r2))
@@ -693,7 +693,7 @@ class EvenPolynomial(SurfaceProfile):
         self.gen_coef_list()
         return self
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         r2 = x*x + y*y
         try:
             # sphere + conic contribution
@@ -711,10 +711,10 @@ class EvenPolynomial(SurfaceProfile):
         z_tot = z + z_asp
         return z_tot
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         return p[2] - self.sag(p[0], p[1])
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         # sphere + conic contribution
         r2 = p[0]*p[0] + p[1]*p[1]
         e = self.cv/sqrt(1. - self.ec*self.cv*self.cv*r2)
@@ -889,7 +889,7 @@ class RadialPolynomial(SurfaceProfile):
         self.gen_coef_list()
         return self
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         r2 = x*x + y*y
         r = sqrt(r2)
         try:
@@ -908,10 +908,10 @@ class RadialPolynomial(SurfaceProfile):
         z_tot = z + z_asp
         return z_tot
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         return p[2] - self.sag(p[0], p[1])
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         # sphere + conic contribution
         r2 = p[0]*p[0] + p[1]*p[1]
         r = sqrt(r2)
@@ -1098,7 +1098,7 @@ class YToroid(SurfaceProfile):
         self.gen_coef_list()
         return self
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         fY = self.fY(y)
         if self.cR == 0:
             return fY
@@ -1127,11 +1127,11 @@ class YToroid(SurfaceProfile):
         z_tot = z + z_asp
         return z_tot
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         fY = self.fY(p[1])
         return p[2] - fY - self.cR*(p[0]*p[0] + p[2]*p[2] - fY*fY)/2
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         # sphere + conic contribution
         y2 = p[1]*p[1]
         e = (self.cv*p[1])/sqrt(1. - (self.cc+1.0)*self.cv*self.cv*y2)
@@ -1179,16 +1179,16 @@ class XToroid(YToroid):
         """
         super().__init__(c, cR, cc, r, rR, ec, coefs)
 
-    def normal(self, p):
+    def normal(self, p: Vector3) -> Vector3:
         return super().normal(np.array([p[1], p[0], p[2]]))
 
-    def sag(self, x, y):
+    def sag(self, x: float, y: float) -> float:
         return super().sag(y, x)
 
-    def f(self, p):
+    def f(self, p: Vector3) -> float:
         return super().f(np.array([p[1], p[0], p[2]]))
 
-    def df(self, p):
+    def df(self, p: Vector3) -> Vector3:
         return super().df(np.array([p[1], p[0], p[2]]))
 
 

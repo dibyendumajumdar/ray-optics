@@ -12,7 +12,7 @@ from numpy.linalg import norm
 from math import sqrt, pi, acos
 
 
-def normalize(v):
+def normalize(v: np.ndarray) -> np.ndarray:
     """ return normalized version of input vector v """
     length = norm(v)
     if length == 0.0:
