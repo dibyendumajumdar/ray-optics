@@ -11,9 +11,10 @@
 import numpy as np
 
 from rayoptics.seq.interface import Interface
+from rayoptics.typing import Transform3
 
 
-def forward_transform(s1: Interface, zdist: float, s2: Interface):
+def forward_transform(s1: Interface, zdist: float, s2: Interface) -> Transform3:
     """ generate transform rotation and translation from
         s1 coords to s2 coords """
 
@@ -43,7 +44,7 @@ def forward_transform(s1: Interface, zdist: float, s2: Interface):
     return r_cascade, t_orig
 
 
-def reverse_transform(s1: Interface, zdist: float, s2: Interface):
+def reverse_transform(s1: Interface, zdist: float, s2: Interface) -> Transform3:
     """ generate transform rotation and translation from
         s2 coords to s1 coords """
 

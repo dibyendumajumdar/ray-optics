@@ -263,13 +263,13 @@ class DecenterData:
         self.dec *= scale_factor
         self.rot_pt *= scale_factor
 
-    def tform_before_surf(self) -> Tuple[Optional[Transform3], Vector3]:
+    def tform_before_surf(self) -> Transform3:
         if self.dtype != 'reverse':
             return self.rot_mat, self.dec
         else:
             return None, np.array([0., 0., 0.])
 
-    def tform_after_surf(self):
+    def tform_after_surf(self) -> Transform3:
         if self.dtype == 'reverse' or self.dtype == 'dec and return':
             rt = self.rot_mat
             if self.rot_mat is not None:
