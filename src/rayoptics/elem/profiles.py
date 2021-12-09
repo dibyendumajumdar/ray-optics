@@ -7,7 +7,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from math import sqrt, copysign, sin, atan2
@@ -71,17 +71,17 @@ class SurfaceProfile:
         """Returns the sagitta (z coordinate) of the surface at x, y. """
         pass
 
-    def profile(self, sd, dir=1, steps=6):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=6) -> List[List[float]]:
         """Return a 2d polyline approximating the surface profile.
 
         Args:
-            sd:  semi-diameter of the profile
+            sd:  semi-diameter of the profile (TOCHECK Tuple of len 1 or 2?)
             dir: +1 for profile from neg to postive direction, -1 if otherwise
             steps: number of points to generate
         """
         pass
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         """Apply *scale_factor* to the profile definition. """
         pass
 
@@ -261,7 +261,7 @@ class Spherical(SurfaceProfile):
     def mutate(self, new_profile):
         Spherical.copyDataFrom(new_profile, self)
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
 
     def intersect_tangent_plane(self, p, d, eps, z_dir):
@@ -322,7 +322,7 @@ class Spherical(SurfaceProfile):
         else:
             return 0
 
-    def profile(self, sd, dir=1, steps=6):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=6) -> List[List[float]]:
         prf = []
         if len(sd) == 1:
             sd_lwr = -sd[0]
@@ -441,7 +441,7 @@ class Conic(SurfaceProfile):
         self.cv = other.cv
         self.cc = other.cc
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
 
     def intersect_tangent_plane(self, p, d, eps, z_dir):
@@ -500,7 +500,7 @@ class Conic(SurfaceProfile):
             raise TraceMissedSurfaceError
         return z
 
-    def profile(self, sd, dir=1, steps=6):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=6) -> List[List[float]]:
         prf = []
         if len(sd) == 1:
             sd_lwr = -sd[0]
@@ -536,7 +536,7 @@ def append_pt_to_2d_profile(surface_profile, y, poly_profile):
         return z
 
 
-def aspheric_profile(surface_profile, sd, dir=1, steps=21):
+def aspheric_profile(surface_profile, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
     if steps < 21:
         steps = 21
 
@@ -675,7 +675,7 @@ class EvenPolynomial(SurfaceProfile):
                 self.max_nonzero_coef = i
         self.max_nonzero_coef += 1
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
         sf_sqr = scale_factor**2
         self.coef2 *= sf_sqr
@@ -731,7 +731,7 @@ class EvenPolynomial(SurfaceProfile):
         e_tot = e + e_asp
         return np.array([-e_tot*p[0], -e_tot*p[1], 1.0])
 
-    def profile(self, sd, dir=1, steps=21):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
         return aspheric_profile(self, sd, dir, steps)
 
 
@@ -872,7 +872,7 @@ class RadialPolynomial(SurfaceProfile):
                 self.max_nonzero_coef = i
         self.max_nonzero_coef += 1
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
         self.coef1 *= scale_factor
         self.coef2 *= scale_factor**2
@@ -934,7 +934,7 @@ class RadialPolynomial(SurfaceProfile):
         e_tot = e + e_asp
         return np.array([-e_tot*p[0], -e_tot*p[1], 1.0])
 
-    def profile(self, sd, dir=1, steps=21):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
         return aspheric_profile(self, sd, dir, steps)
 
 
@@ -1079,7 +1079,7 @@ class YToroid(SurfaceProfile):
                 self.max_nonzero_coef = i
         self.max_nonzero_coef += 1
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
         self.cR /= scale_factor
         sf_sqr = scale_factor**2
@@ -1152,7 +1152,7 @@ class YToroid(SurfaceProfile):
 
         return np.array([Fx, Fy, Fz])
 
-    def profile(self, sd, dir=1, steps=21):
+    def profile(self, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
         return aspheric_profile(self, sd, dir, steps)
 
 

@@ -54,11 +54,11 @@ class InteractionMode(Enum):
 class Surface(interface.Interface):
     """ Container of profile, extent, position and orientation. """
 
-    def __init__(self, lbl='', profile=None,
+    def __init__(self, lbl: str = '', profile=None,
                  clear_apertures=None, edge_apertures=None,
                  **kwargs):
         super().__init__(**kwargs)
-        self.label = lbl
+        self.label: str = lbl
         if profile:
             self.profile = profile
         else:
