@@ -162,11 +162,11 @@ class SurfaceProfile:
         Raises:
             :exc:`~rayoptics.raytr.traceerror.TraceMissedSurfaceError`
         '''
-        p = p0
-        s1 = -self.f(p)/np.dot(d, self.df(p))
-        delta = abs(s1)
+        p: Vector3 = p0
+        s1: float = -self.f(p)/np.dot(d, self.df(p))
+        delta: float = abs(s1)
         # print("intersect", s1)
-        iter = 0
+        iter: int = 0
         while delta > eps and iter < 1000:
             p = p0 + s1*d
             s2 = s1 - self.f(p)/np.dot(d, self.df(p))
