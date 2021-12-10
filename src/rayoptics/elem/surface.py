@@ -37,7 +37,7 @@ from . import profiles
 import transforms3d as t3d
 from rayoptics.optical.model_enums import get_decenter_for_type
 from rayoptics.raytr.traceerror import TraceError
-from rayoptics.typing import Vector3, Transform3
+from rayoptics.typing import Vector3, Matrix3
 
 
 class InteractionMode(Enum):
@@ -263,13 +263,13 @@ class DecenterData:
         self.dec *= scale_factor
         self.rot_pt *= scale_factor
 
-    def tform_before_surf(self) -> Transform3:
+    def tform_before_surf(self) -> Tuple[Optional[Matrix3], Vector3]:
         if self.dtype != 'reverse':
             return self.rot_mat, self.dec
         else:
             return None, np.array([0., 0., 0.])
 
-    def tform_after_surf(self) -> Transform3:
+    def tform_after_surf(self) -> Tuple[Optional[Matrix3], Vector3]:
         if self.dtype == 'reverse' or self.dtype == 'dec and return':
             rt = self.rot_mat
             if self.rot_mat is not None:
