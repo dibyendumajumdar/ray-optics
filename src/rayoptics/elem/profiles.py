@@ -13,7 +13,7 @@ import numpy as np
 from math import sqrt, copysign, sin, atan2
 from scipy import optimize
 
-from rayoptics.typing import Vector3, ZDir
+from rayoptics.typing import Vector3, ZDir, Direction3
 from rayoptics.util.misc_math import normalize
 from rayoptics.raytr.traceerror import TraceError, TraceMissedSurfaceError
 
@@ -22,7 +22,7 @@ def resize_list(lst, new_length, null_item=None):
     return lst + [null_item for item in range(new_length - len(lst))]
 
 
-def intersect_parabola(cv: float, p: Vector3, d: Vector3, z_dir=1.0):
+def intersect_parabola(cv: float, p: Vector3, d: Direction3, z_dir=1.0):
     ''' Intersect a parabolid, starting from an arbitrary point.
 
     Args:
@@ -63,7 +63,7 @@ class SurfaceProfile:
         "Returns the gradient of the profile surface function at point *p*. "
         pass
 
-    def normal(self, p: Vector3) -> Vector3:
+    def normal(self, p: Vector3) -> Direction3:
         """Returns the unit normal of the profile at point *p*. """
         return normalize(self.df(p))
 
@@ -85,7 +85,7 @@ class SurfaceProfile:
         """Apply *scale_factor* to the profile definition. """
         pass
 
-    def intersect(self, p0: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
+    def intersect(self, p0: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         Args:
@@ -102,7 +102,7 @@ class SurfaceProfile:
         '''
         return self.intersect_spencer(p0, d, eps, z_dir)
 
-    def intersect_welford(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
+    def intersect_welford(self, p: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         From Welford, Aberrations of Optical Systems (ISBN-10: 0852745648),
@@ -144,7 +144,7 @@ class SurfaceProfile:
         s1 = norm(p1 - p)
         return s1, p1
 
-    def intersect_spencer(self, p0: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
+    def intersect_spencer(self, p0: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         From Spencer and Murty, `General Ray-Tracing Procedure
@@ -283,7 +283,7 @@ class Spherical(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def intersect(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
+    def intersect(self, p: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersection with a sphere, starting from an arbitrary point. '''
 
 #        return super().intersect(p, d, eps, z_dir)
@@ -463,7 +463,7 @@ class Conic(SurfaceProfile):
         p1 = p + s*d
         return s, p1
 
-    def intersect(self, p: Vector3, d: Vector3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
+    def intersect(self, p: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersection with a conic, starting from an arbitrary point.'''
 
         # For quadratic equation ax**2 + bx + c = 0:
@@ -1179,7 +1179,7 @@ class XToroid(YToroid):
         """
         super().__init__(c, cR, cc, r, rR, ec, coefs)
 
-    def normal(self, p: Vector3) -> Vector3:
+    def normal(self, p: Vector3) -> Direction3:
         return super().normal(np.array([p[1], p[0], p[2]]))
 
     def sag(self, x: float, y: float) -> float:
