@@ -216,14 +216,15 @@ class DecenterData:
     """
 
     def __init__(self, dtype, x=0., y=0., alpha=0., beta=0., gamma=0.):
+        self._dtype: str
         self.dtype = dtype
         # x, y, z vertex decenter
-        self.dec = np.array([x, y, 0.])
+        self.dec: Vector3 = np.array([x, y, 0.])
         # alpha, beta, gamma euler angles
-        self.euler = np.array([alpha, beta, gamma])
+        self.euler: Vector3 = np.array([alpha, beta, gamma])
         # x, y, z rotation point offset
-        self.rot_pt = np.array([0., 0., 0.])
-        self.rot_mat = None
+        self.rot_pt: Vector3 = np.array([0., 0., 0.])
+        self.rot_mat: Optional[Matrix3] = None
 
     def __json_decode__(self, **attrs):
         for a_key, a_val in attrs.items():
@@ -243,7 +244,7 @@ class DecenterData:
         print(f"euler angles: {self.euler}")
 
     @property
-    def dtype(self):
+    def dtype(self) -> str:
         return self._dtype
 
     @dtype.setter
@@ -251,15 +252,15 @@ class DecenterData:
         self._dtype = (value if isinstance(value, str)
                        else get_decenter_for_type(value))
 
-    def update(self):
-        def convertl2r(self):
+    def update(self) -> None:
+        def convertl2r(self) -> Vector3:
             return np.array([-self.euler[0], -self.euler[1], self.euler[2]])
         if self.euler.any():
             self.rot_mat = t3d.euler.euler2mat(*np.deg2rad(convertl2r(self)))
         else:
             self.rot_mat = None
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.dec *= scale_factor
         self.rot_pt *= scale_factor
 

@@ -30,8 +30,8 @@ class Gap:
     """
 
     def __init__(self, t=0.0, med=m.Air()):
-        self.thi = t
-        self.medium = med
+        self.thi: float = t
+        self.medium: m.Medium = med
 
     def __repr__(self):
         return "Gap(t=%r, medium=%r)" % (self.thi, self.medium)

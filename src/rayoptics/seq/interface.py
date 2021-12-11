@@ -49,13 +49,13 @@ class Interface:
         decenter: :class:`~rayoptics.elem.surface.DecenterData` for the interface, if specified
         max_aperture: the maximum aperture radius on the interface
     """
-    def __init__(self, interact_mode: InteractMode='transmit', delta_n=0.0,
-                 max_ap=1.0, decenter=None,
+    def __init__(self, interact_mode: InteractMode = 'transmit', delta_n: float = 0.0,
+                 max_ap: float = 1.0, decenter=None,
                  phase_element=None, **kwargs):
-        self.interact_mode = interact_mode
-        self.delta_n = delta_n
+        self.interact_mode: InteractMode = interact_mode
+        self.delta_n: float = delta_n
         self.decenter = decenter
-        self.max_aperture = max_ap
+        self.max_aperture: float = max_ap
         if phase_element is not None:
             self.phase_element = phase_element
 
@@ -87,21 +87,20 @@ class Interface:
             delattr(self, 'refract_mode')
 
     @property
-    def profile_cv(self):
+    def profile_cv(self) -> float:
         return 0.0
 
-    def set_optical_power(self, pwr, n_before, n_after):
+    def set_optical_power(self, pwr: float, n_before: float, n_after: float) -> None:
         pass
 
-    def surface_od(self):
+    def surface_od(self) -> None:
         pass
 
-    def set_max_aperture(self, max_ap: float):
+    def set_max_aperture(self, max_ap: float) -> None:
         """ max_ap is the max aperture radius """
         self.max_aperture = max_ap
 
-    def intersect(self, p0: Vector3, d: Vector3, eps: float = 1.0e-12, z_dir: ZDir = 1)\
-            -> Tuple[float, Vector3]:
+    def intersect(self, p0: Vector3, d: Vector3, eps: float = 1.0e-12, z_dir: ZDir = 1) -> Tuple[float, Vector3]:
         ''' Intersect an :class:`~.Interface`, starting from an arbitrary point.
 
         Args:
@@ -144,7 +143,7 @@ class Interface:
             return self.phase_element.phase(pt, in_dir, srf_nrml, z_dir, wl,
                                             n_in, n_out)
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.max_aperture *= scale_factor
         if self.decenter:
             self.decenter.apply_scale_factor(scale_factor)
