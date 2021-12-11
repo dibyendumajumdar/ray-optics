@@ -223,20 +223,21 @@ class Spherical(SurfaceProfile):
             r: radius of curvature. If zero, taken as planar. If r is
                 specified, it overrides any input for c (curvature).
         """
+        self.cv: float
         if r is not None:
             self.r = r
         else:
             self.cv = c
 
     @property
-    def r(self):
+    def r(self) -> float:
         if self.cv != 0.0:
             return 1.0/self.cv
         else:
             return 0.0
 
     @r.setter
-    def r(self, radius):
+    def r(self, radius: float) -> None:
         if radius != 0.0:
             self.cv = 1.0/radius
         else:
