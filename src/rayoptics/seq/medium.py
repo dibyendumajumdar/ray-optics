@@ -35,22 +35,22 @@ def glass_decode(gc):
 class Medium:
     """ Constant refractive index medium. """
 
-    def __init__(self, nd, lbl, cat=''):
-        self.label = lbl
-        self.n = nd
-        self._catalog_name = cat
+    def __init__(self, nd: float, lbl: str, cat: str = ''):
+        self.label: str = lbl
+        self.n: float = nd
+        self._catalog_name: str = cat
 
     def __repr__(self):
         return ('Medium(' + str(self.n) + ', ' + f"'{self.label}'" +
                 ', cat=' + f"'{self._catalog_name}'" + ')')
 
-    def name(self):
+    def name(self) -> str:
         return self.label
 
-    def catalog_name(self):
+    def catalog_name(self) -> str:
         return self._catalog_name
 
-    def rindex(self, wv_nm):
+    def rindex(self, wv_nm: float) -> float:
         """ returns the interpolated refractive index at wv_nm
 
         Args:
@@ -66,16 +66,16 @@ class Air(Medium):
     """ Optical definition for air (low fidelity definition) """
 
     def __init__(self):
-        self.label = 'air'
-        self.n = 1.0
+        self.label: str = 'air'
+        self.n: float = 1.0
 
     def __repr__(self):
         return 'Air()'
 
-    def name(self):
+    def name(self) -> str:
         return self.label
 
-    def catalog_name(self):
+    def catalog_name(self) -> str:
         return ''
 
 
