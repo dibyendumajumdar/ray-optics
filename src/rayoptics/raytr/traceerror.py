@@ -18,6 +18,9 @@ class TraceMissedSurfaceError(TraceError):
     def __init__(self, ifc=None, prev_seg=None):
         self.ifc = ifc
         self.prev_seg = prev_seg
+        self.surf = None
+        self.prev_tfrm = None
+        self.ray_pkg = None
 
 
 class TraceTIRError(TraceError):
@@ -29,6 +32,8 @@ class TraceTIRError(TraceError):
         self.normal = normal
         self.prev_indx = prev_indx
         self.follow_indx = follow_indx
+        self.surf = None
+        self.ray_pkg = None
 
 
 class TraceEvanescentRayError(TraceError):
@@ -40,6 +45,8 @@ class TraceEvanescentRayError(TraceError):
         self.normal = normal
         self.prev_indx = prev_indx
         self.follow_indx = follow_indx
+        self.surf = None
+        self.ray_pkg = None
 
 
 class TraceRayBlockedError(TraceError):
