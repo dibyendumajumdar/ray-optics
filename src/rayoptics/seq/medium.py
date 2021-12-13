@@ -35,7 +35,7 @@ def glass_decode(gc):
 class Medium:
     """ Constant refractive index medium. """
 
-    def __init__(self, nd: float, lbl: str, cat: str = ''):
+    def __init__(self, nd: float, lbl: str = '', cat: str = ''):
         self.label: str = lbl
         self.n: float = nd
         self._catalog_name: str = cat
