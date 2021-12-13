@@ -35,11 +35,12 @@ class SystemSpec:
     """
 
     def __init__(self):
-        self.title = ''
-        self.initials = ''
+        self.title: str = ''
+        self.initials: str = ''
+        self._dimensions: str
         self.dimensions = 'mm'
-        self.temperature = 20.0
-        self.pressure = 760.0
+        self.temperature: float = 20.0
+        self.pressure: float = 760.0
 
     def __json_decode__(self, **attrs):
         for a_key, a_val in attrs.items():

@@ -28,7 +28,7 @@
 
 from enum import Enum, auto
 from math import sqrt
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 import numpy as np
 
@@ -37,7 +37,7 @@ from . import profiles
 import transforms3d as t3d
 from rayoptics.optical.model_enums import get_decenter_for_type
 from rayoptics.raytr.traceerror import TraceError
-from rayoptics.typing import Vector3, Matrix3
+from rayoptics.typing import Vector3, Matrix3, Vector2, Direction3, ZDir
 
 
 class InteractionMode(Enum):
@@ -54,8 +54,8 @@ class InteractionMode(Enum):
 class Surface(interface.Interface):
     """ Container of profile, extent, position and orientation. """
 
-    def __init__(self, lbl: str = '', profile=None,
-                 clear_apertures=None, edge_apertures=None,
+    def __init__(self, lbl: str = '', profile: profiles.SurfaceProfile = None,
+                 clear_apertures: List['Aperture'] = None, edge_apertures: List['Aperture'] = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.label: str = lbl
@@ -63,8 +63,8 @@ class Surface(interface.Interface):
             self.profile = profile
         else:
             self.profile = profiles.Spherical()
-        self.clear_apertures = clear_apertures if clear_apertures else []
-        self.edge_apertures = edge_apertures if edge_apertures else []
+        self.clear_apertures: List['Aperture'] = clear_apertures if clear_apertures else []
+        self.edge_apertures: List['Aperture'] = edge_apertures if edge_apertures else []
 
     def __repr__(self):
         if len(self.label) > 0:
@@ -76,10 +76,10 @@ class Surface(interface.Interface):
                    .format(type(self).__name__,
                            self.profile, self.interact_mode)
 
-    def interface_type(self):
+    def interface_type(self) -> str:
         return type(self.profile).__name__
 
-    def update(self):
+    def update(self) -> None:
         super().update()
         self.profile.update()
 
@@ -91,26 +91,26 @@ class Surface(interface.Interface):
             ea.sync_to_restore(opt_model)
 
     @property
-    def profile_cv(self):
+    def profile_cv(self) -> float:
         return self.profile.cv
 
     @profile_cv.setter
-    def profile_cv(self, cv):
+    def profile_cv(self, cv: float) -> None:
         self.profile.cv = cv
 
     @property
-    def optical_power(self):
+    def optical_power(self) -> float:
         return self.delta_n * self.profile.cv
 
     @optical_power.setter
-    def optical_power(self, pwr):
+    def optical_power(self, pwr: float) -> None:
         self.profile.cv = pwr/self.delta_n if self.delta_n != 0.0 else 0.0
 
-    def set_optical_power(self, pwr, n_before, n_after):
+    def set_optical_power(self, pwr: float, n_before: float, n_after: float) -> None:
         self.delta_n = n_after - n_before
         self.optical_power = pwr
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         super().apply_scale_factor(scale_factor)
         self.max_aperture *= scale_factor
         self.profile.apply_scale_factor(scale_factor)
@@ -119,22 +119,24 @@ class Surface(interface.Interface):
         for ca in self.clear_apertures:
             ca.apply_scale_factor(scale_factor)
 
-    def from_first_order(self, nu_before, nu_after, y):
+    def from_first_order(self, nu_before: float, nu_after: float, y: float):
         pass
 
-    def z_sag(self, pt):
+    def z_sag(self, pt: Vector3) -> float:
         return self.profile.sag(0., pt[1])
 
-    def set_z_sag(self, pt):
+    def set_z_sag(self, pt: Vector3) -> None:
         self.profile.cv = self.calc_cv_from_zsag(pt)
 
-    def calc_cv_from_zsag(self, pt):
+    def calc_cv_from_zsag(self, pt: Vector3) -> float:
+        x: float
+        y: float
         x, y = pt
         cv = 2*x / (x**2 + y**2)
         return cv
 
-    def surface_od(self):
-        od = 0
+    def surface_od(self) -> float:
+        od: float = 0
         if len(self.edge_apertures) > 0:
             for e in self.edge_apertures:
                 edg = e.max_dimension()
@@ -150,7 +152,7 @@ class Surface(interface.Interface):
 
         return od
 
-    def get_y_aperture_extent(self):
+    def get_y_aperture_extent(self) -> List[float]:
         """ returns [y_min, y_max] for the union of apertures """
         od = [1.0e10, -1.0e10]
         if len(self.edge_apertures) > 0:
@@ -197,11 +199,10 @@ class Surface(interface.Interface):
                 prf.append([sag, sd_upr])
             return prf
 
-    def intersect(self, p0, d, eps=1.0e-12, z_dir=1.0)\
-            -> Tuple[float, Vector3]:
+    def intersect(self, p0: Vector3, d: Direction3, eps: float = 1.0e-12, z_dir: ZDir = 1) -> Tuple[float, Vector3]:
         return self.profile.intersect(p0, d, eps, z_dir)
 
-    def normal(self, p):
+    def normal(self, p: Vector3) -> Direction3:
         return self.profile.normal(p)
 
 
@@ -283,10 +284,10 @@ class DecenterData:
 
 
 class Aperture():
-    def __init__(self, x_offset=0.0, y_offset=0.0, rotation=0.0):
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        self.rotation = rotation
+    def __init__(self, x_offset: float = 0.0, y_offset: float = 0.0, rotation: float = 0.0):
+        self.x_offset: float = x_offset
+        self.y_offset: float = y_offset
+        self.rotation: float = rotation
 
     def sync_to_restore(self, opt_model):
         if not hasattr(self, 'x_offset'):
@@ -296,94 +297,94 @@ class Aperture():
         if not hasattr(self, 'rotation'):
             self.rotation = 0.0
 
-    def dimension(self):
+    def dimension(self) -> Tuple[float, float]:
         pass
 
-    def set_dimension(self, x, y):
+    def set_dimension(self, x: float, y: float) -> None:
         pass
 
-    def max_dimension(self):
+    def max_dimension(self) -> float:
         x, y = self.dimension()
         return sqrt(x*x + y*y)
 
-    def point_inside(self, x, y):
+    def point_inside(self, x: float, y: float) -> bool:
         pass
 
-    def bounding_box(self):
+    def bounding_box(self) -> Tuple[Vector2, Vector2]:
         center = np.array([self.x_offset, self.y_offset])
         extent = np.array(self.dimension())
         return center-extent, center+extent
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         self.x_offset *= scale_factor
         self.y_offset *= scale_factor
 
-    def tform(self, x, y):
+    def tform(self, x: float, y: float) -> Tuple[float, float]:
         x -= self.x_offset
         y -= self.y_offset
         return x, y
 
 
 class Circular(Aperture):
-    def __init__(self, radius=1.0, **kwargs):
+    def __init__(self, radius: float = 1.0, **kwargs):
         super().__init__(**kwargs)
         self.radius = radius
 
-    def dimension(self):
+    def dimension(self) -> Tuple[float, float]:
         return (self.radius, self.radius)
 
-    def set_dimension(self, x, y):
+    def set_dimension(self, x: float, y: float) -> None:
         self.radius = sqrt(x*x + y*y)
 
-    def max_dimension(self):
+    def max_dimension(self) -> float:
         return self.radius
 
-    def point_inside(self, x, y):
+    def point_inside(self, x: float, y: float) -> bool:
         x, y = self.tform(x, y)
         return sqrt(x*x + y*y) <= self.radius
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         super().apply_scale_factor(scale_factor)
         self.radius *= scale_factor
 
 
 class Rectangular(Aperture):
-    def __init__(self, x_half_width=1.0, y_half_width=1.0, **kwargs):
+    def __init__(self, x_half_width: float = 1.0, y_half_width: float = 1.0, **kwargs):
         super().__init__(**kwargs)
-        self.x_half_width = x_half_width
-        self.y_half_width = y_half_width
+        self.x_half_width: float = x_half_width
+        self.y_half_width: float = y_half_width
 
-    def dimension(self):
+    def dimension(self) -> Tuple[float, float]:
         return (self.x_half_width, self.y_half_width)
 
-    def set_dimension(self, x, y):
+    def set_dimension(self, x: float, y: float) -> None:
         self.x_half_width = abs(x)
         self.y_half_width = abs(y)
 
-    def point_inside(self, x, y):
+    def point_inside(self, x: float, y: float) -> bool:
         x, y = self.tform(x, y)
         return abs(x) <= self.x_half_width and abs(y) <= self.y_half_width
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         super().apply_scale_factor(scale_factor)
         self.x_half_width *= scale_factor
         self.y_half_width *= scale_factor
 
 
 class Elliptical(Aperture):
-    def __init__(self, x_half_width=1.0, y_half_width=1.0, **kwargs):
+    def __init__(self, x_half_width: float = 1.0, y_half_width: float = 1.0, **kwargs):
         super().__init__(**kwargs)
-        self.x_half_width = x_half_width
-        self.y_half_width = y_half_width
+        self.x_half_width: float = x_half_width
+        self.y_half_width: float = y_half_width
 
-    def dimension(self):
+    def dimension(self) -> Tuple[float, float]:
         return (self.x_half_width, self.y_half_width)
 
-    def set_dimension(self, x, y):
+    def set_dimension(self, x: float, y: float) -> None:
         self.x_half_width = abs(x)
         self.y_half_width = abs(y)
 
-    def apply_scale_factor(self, scale_factor):
+    def apply_scale_factor(self, scale_factor: float) -> None:
         super().apply_scale_factor(scale_factor)
         self.x_half_width *= scale_factor
         self.y_half_width *= scale_factor

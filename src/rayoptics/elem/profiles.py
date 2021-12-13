@@ -7,7 +7,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import numpy as np
 from math import sqrt, copysign, sin, atan2
@@ -22,7 +22,7 @@ def resize_list(lst, new_length, null_item=None):
     return lst + [null_item for item in range(new_length - len(lst))]
 
 
-def intersect_parabola(cv: float, p: Vector3, d: Direction3, z_dir=1.0):
+def intersect_parabola(cv: float, p: Vector3, d: Direction3, z_dir=1.0) -> Tuple[float, Vector3]:
     ''' Intersect a parabolid, starting from an arbitrary point.
 
     Args:
@@ -49,10 +49,12 @@ def intersect_parabola(cv: float, p: Vector3, d: Direction3, z_dir=1.0):
 class SurfaceProfile:
     """Base class for surface profiles. """
 
+    cv: float
+
     def __repr__(self):
         return "{!s}()".format(type(self).__name__)
 
-    def update(self):
+    def update(self) -> 'SurfaceProfile':
         return self
 
     def f(self, p: Vector3) -> float:
@@ -71,7 +73,7 @@ class SurfaceProfile:
         """Returns the sagitta (z coordinate) of the surface at x, y. """
         pass
 
-    def profile(self, sd: Tuple[float, ...], dir=1, steps=6) -> List[List[float]]:
+    def profile(self, sd: Tuple[float, ...], dir: ZDir = 1, steps: int = 6) -> List[List[float]]:
         """Return a 2d polyline approximating the surface profile.
 
         Args:
@@ -177,7 +179,7 @@ class SurfaceProfile:
         # print('intersect iter =', iter)
         return s1, p
 
-    def intersect_scipy(self, p0, d, eps, z_dir):
+    def intersect_scipy(self, p0: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         ''' Intersect a profile, starting from an arbitrary point.
 
         Args:
@@ -215,7 +217,7 @@ class SurfaceProfile:
 class Spherical(SurfaceProfile):
     """ Spherical surface profile parameterized by curvature. """
 
-    def __init__(self, c=0.0, r=None):
+    def __init__(self, c: float = 0.0, r: Optional[float] = None):
         """ initialize a Spherical profile.
 
         Args:
@@ -265,7 +267,7 @@ class Spherical(SurfaceProfile):
     def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
 
-    def intersect_tangent_plane(self, p, d, eps, z_dir):
+    def intersect_tangent_plane(self, p: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         # Welford's intersection with a sphere, starting from the tangent plane
         # transfer p to tangent plane of surface
         s0 = -p[2]/d[2]
@@ -323,7 +325,7 @@ class Spherical(SurfaceProfile):
         else:
             return 0
 
-    def profile(self, sd: Tuple[float, ...], dir=1, steps=6) -> List[List[float]]:
+    def profile(self, sd: Tuple[float, ...], dir: ZDir = 1, steps: int = 6) -> List[List[float]]:
         prf = []
         if len(sd) == 1:
             sd_lwr = -sd[0]
@@ -380,7 +382,7 @@ class Conic(SurfaceProfile):
 
     """
 
-    def __init__(self, c=0.0, cc=0.0, r=None, ec=None):
+    def __init__(self, c: float = 0.0, cc: float = 0.0, r: Optional[float] = None, ec: Optional[float] = None):
         """ initialize a Conic profile.
 
         Args:
@@ -402,25 +404,25 @@ class Conic(SurfaceProfile):
             self.cc = cc
 
     @property
-    def r(self):
+    def r(self) -> float:
         if self.cv != 0.0:
             return 1.0/self.cv
         else:
             return 0.0
 
     @r.setter
-    def r(self, radius):
+    def r(self, radius: float) -> None:
         if radius != 0.0:
             self.cv = 1.0/radius
         else:
             self.cv = 0.0
 
     @property
-    def ec(self):
+    def ec(self) -> float:
         return self.cc + 1.0
 
     @ec.setter
-    def ec(self, ec):
+    def ec(self, ec: float) -> None:
         self.cc = ec - 1.0
 
     def __str__(self):
@@ -445,7 +447,7 @@ class Conic(SurfaceProfile):
     def apply_scale_factor(self, scale_factor: float) -> None:
         self.cv /= scale_factor
 
-    def intersect_tangent_plane(self, p, d, eps, z_dir):
+    def intersect_tangent_plane(self, p: Vector3, d: Direction3, eps: float, z_dir: ZDir) -> Tuple[float, Vector3]:
         # Welford's intersection with a conic, starting from the tangent plane
         # transfer p to tangent plane of surface
         s0 = -p[2]/d[2]
@@ -537,7 +539,7 @@ def append_pt_to_2d_profile(surface_profile, y, poly_profile):
         return z
 
 
-def aspheric_profile(surface_profile, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
+def aspheric_profile(surface_profile, sd: Tuple[float, ...], dir: ZDir = 1, steps: int = 21) -> List[List[float]]:
     if steps < 21:
         steps = 21
 
@@ -565,7 +567,7 @@ def aspheric_profile(surface_profile, sd: Tuple[float, ...], dir=1, steps=21) ->
 class EvenPolynomial(SurfaceProfile):
     """ Even Polynomial asphere up to 20th order, on base conic. """
 
-    def __init__(self, c=0.0, cc=0.0, r=None, ec=None, coefs=None):
+    def __init__(self, c: float = 0.0, cc: float = 0.0, r: Optional[float] = None, ec: Optional[float] = None, coefs: Optional[List[float]] = None):
         """ initialize a EvenPolynomial profile.
 
         Args:
@@ -588,6 +590,7 @@ class EvenPolynomial(SurfaceProfile):
         else:
             self.cc = cc
 
+        self.coefs: List[float]
         if coefs is not None:
             self.coefs = coefs
         else:
@@ -605,25 +608,25 @@ class EvenPolynomial(SurfaceProfile):
         self.coef20 = 0.0
 
     @property
-    def r(self):
+    def r(self) -> float:
         if self.cv != 0.0:
             return 1.0/self.cv
         else:
             return 0.0
 
     @r.setter
-    def r(self, radius):
+    def r(self, radius: float) -> None:
         if radius != 0.0:
             self.cv = 1.0/radius
         else:
             self.cv = 0.0
 
     @property
-    def ec(self):
+    def ec(self) -> float:
         return self.cc + 1.0
 
     @ec.setter
-    def ec(self, ec):
+    def ec(self, ec: float) -> None:
         self.cc = ec - 1.0
 
     def __str__(self):
@@ -690,7 +693,7 @@ class EvenPolynomial(SurfaceProfile):
         self.coef18 *= sf_sqr**9
         self.coef20 *= sf_sqr**10
 
-    def update(self):
+    def update(self) -> SurfaceProfile:
         self.gen_coef_list()
         return self
 
@@ -732,7 +735,7 @@ class EvenPolynomial(SurfaceProfile):
         e_tot = e + e_asp
         return np.array([-e_tot*p[0], -e_tot*p[1], 1.0])
 
-    def profile(self, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
+    def profile(self, sd: Tuple[float, ...], dir: ZDir = 1, steps: int = 21) -> List[List[float]]:
         return aspheric_profile(self, sd, dir, steps)
 
 
@@ -748,7 +751,8 @@ class RadialPolynomial(SurfaceProfile):
     """
     initial_size = 10
 
-    def __init__(self, c=0.0, cc=None, r=None, ec=1.0, coefs=None):
+    def __init__(self, c: float = 0.0, cc: Optional[float] = None, r: Optional[float] = None, ec: float = 1.0,
+                 coefs: Optional[List[float]] = None):
         """ initialize a RadialPolynomial profile.
 
         Args:
@@ -788,33 +792,33 @@ class RadialPolynomial(SurfaceProfile):
         self.coef10 = 0.0
 
     @property
-    def r(self):
+    def r(self) -> float:
         if self.cv != 0.0:
             return 1.0/self.cv
         else:
             return 0.0
 
     @r.setter
-    def r(self, radius):
+    def r(self, radius: float) -> None:
         if radius != 0.0:
             self.cv = 1.0/radius
         else:
             self.cv = 0.0
 
     @property
-    def cc(self):
+    def cc(self) -> float:
         return self.ec - 1.0
 
     @cc.setter
-    def cc(self, cc):
+    def cc(self, cc: float) -> None:
         self.ec = cc + 1.0
 
 #    @property
-    def get_coef(self, exp):
+    def get_coef(self, exp: int) -> float:
         return self.coefs[exp]
 
 #    @coef.setter
-    def set_coef(self, exp, value):
+    def set_coef(self, exp: int, value: float) -> None:
         try:
             self.coefs[exp] = value
         except IndexError:
@@ -886,7 +890,7 @@ class RadialPolynomial(SurfaceProfile):
         self.coef9 *= scale_factor**9
         self.coef10 *= scale_factor**10
 
-    def update(self):
+    def update(self) -> SurfaceProfile:
         self.gen_coef_list()
         return self
 
@@ -943,9 +947,9 @@ class YToroid(SurfaceProfile):
     """Y Aspheric toroid, up to 20th order, on base conic. """
 
     def __init__(self,
-                 c=0.0, cR=0, cc=0.0,
-                 r=None, rR=None, ec=None,
-                 coefs=None):
+                 c: float = 0.0, cR: float = 0, cc: float = 0.0,
+                 r: Optional[float] = None, rR: Optional[float] = None, ec: Optional[float] = None,
+                 coefs: Optional[List[float]] = None):
         """ initialize a EvenPolynomial profile.
 
         Args:
@@ -992,39 +996,39 @@ class YToroid(SurfaceProfile):
         self.coef20 = 0.0
 
     @property
-    def r(self):
+    def r(self) -> float:
         if self.cv != 0.0:
             return 1.0/self.cv
         else:
             return 0.0
 
     @r.setter
-    def r(self, radius):
+    def r(self, radius: float) -> None:
         if radius != 0.0:
             self.cv = 1.0/radius
         else:
             self.cv = 0.0
 
     @property
-    def rR(self):
+    def rR(self) -> float:
         if self.cR != 0.0:
             return 1.0/self.cR
         else:
             return 0.0
 
     @rR.setter
-    def rR(self, radius):
+    def rR(self, radius: float) -> None:
         if radius != 0.0:
             self.cR = 1.0/radius
         else:
             self.cR = 0.0
 
     @property
-    def ec(self):
+    def ec(self) -> float:
         return self.cc + 1.0
 
     @ec.setter
-    def ec(self, ec):
+    def ec(self, ec: float) -> None:
         self.cc = ec - 1.0
 
     def __str__(self):
@@ -1095,7 +1099,7 @@ class YToroid(SurfaceProfile):
         self.coef18 *= sf_sqr**9
         self.coef20 *= sf_sqr**10
 
-    def update(self):
+    def update(self) -> SurfaceProfile:
         self.gen_coef_list()
         return self
 
@@ -1110,7 +1114,7 @@ class YToroid(SurfaceProfile):
             z_tot = z + fY
             return z_tot
 
-    def fY(self, y):
+    def fY(self, y: float) -> float:
         y2 = y*y
         try:
             # sphere + conic contribution
@@ -1153,7 +1157,7 @@ class YToroid(SurfaceProfile):
 
         return np.array([Fx, Fy, Fz])
 
-    def profile(self, sd: Tuple[float, ...], dir=1, steps=21) -> List[List[float]]:
+    def profile(self, sd: Tuple[float, ...], dir: ZDir = 1, steps: int = 21) -> List[List[float]]:
         return aspheric_profile(self, sd, dir, steps)
 
 
@@ -1161,9 +1165,9 @@ class XToroid(YToroid):
     """X Aspheric toroid, up to 20th order, on base conic. Leverage YToroid"""
 
     def __init__(self,
-                 c=0.0, cR=0, cc=0.0,
-                 r=None, rR=None, ec=None,
-                 coefs=None):
+                 c: float = 0.0, cR: float = 0, cc: float = 0.0,
+                 r: Optional[float] = None, rR: Optional[float] = None, ec: Optional[float] = None,
+                 coefs: Optional[List[float]] = None):
         """ initialize a EvenPolynomial profile.
 
         Args:

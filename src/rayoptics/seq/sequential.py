@@ -945,8 +945,8 @@ def gen_sequence(surf_data_list, **kwargs):
     return seq
 
 
-def create_surface_and_gap(surf_data, radius_mode=False, prev_medium=None,
-                           wvl=550.0, **kwargs):
+def create_surface_and_gap(surf_data, radius_mode: bool = False, prev_medium: Optional[m.Medium] = None,
+                           wvl: float = 550.0, **kwargs) -> Tuple[surface.Surface, Gap, float, Transform3]:
     """ create a surface and gap where `surf_data` is a list that contains:
 
     [curvature, thickness, refractive_index, v-number, semi-diameter]
@@ -975,6 +975,7 @@ def create_surface_and_gap(surf_data, radius_mode=False, prev_medium=None,
     else:
         s.profile.cv = surf_data[0]
 
+    mat: m.Medium
     if len(surf_data) > 2:
         if isanumber(surf_data[2]):  # assume all args are numeric
             if len(surf_data) < 3:

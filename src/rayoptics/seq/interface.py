@@ -93,7 +93,7 @@ class Interface:
     def set_optical_power(self, pwr: float, n_before: float, n_after: float) -> None:
         pass
 
-    def surface_od(self) -> None:
+    def surface_od(self) -> float:
         pass
 
     def set_max_aperture(self, max_ap: float) -> None:
