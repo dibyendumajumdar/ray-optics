@@ -154,15 +154,15 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
 
     # trace object surface
     obj = next(path)
-    srf_obj = obj[0]  # obj[Intfc]
-    dst_b4, pt_obj = srf_obj.intersect(pt0, dir0, z_dir=obj[4])   # obj[Zdir]
+    srf_obj = obj[Intfc]
+    dst_b4, pt_obj = srf_obj.intersect(pt0, dir0, z_dir=obj[Zdir])
 
     before = obj
     before_pt = pt_obj
     before_dir = dir0
     before_normal = srf_obj.normal(before_pt)
-    tfrm_from_before = before[2]  # Tfrm
-    z_dir_before = before[4]  # Zdir
+    tfrm_from_before = before[Tfrm]
+    z_dir_before = before[Zdir]
 
     op_delta = 0.0
     opl = 0.0
@@ -182,23 +182,23 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
 
             after = next(path)
 
-            rt, t = tfrm_from_before   # Matrix3, Vector3
-            b4_pt, b4_dir = rt.dot(before_pt - t), rt.dot(before_dir)   # Vector3, Vector3
+            rt, t = tfrm_from_before
+            b4_pt, b4_dir = rt.dot(before_pt - t), rt.dot(before_dir)
 
             pp_dst: float = -b4_pt.dot(b4_dir)
             pp_pt_before: Vector3 = b4_pt + pp_dst*b4_dir
 
-            ifc: Interface = after[0] # after[Intfc]
-            z_dir_after: ZDir = after[4] # after[Zdir]
+            ifc: Interface = after[Intfc]
+            z_dir_after: ZDir = after[Zdir]
 
             # intersect ray with profile
             pp_dst_intrsct, inc_pt = ifc.intersect(pp_pt_before, b4_dir,
-                                                   eps=eps, z_dir=z_dir_before)   # float, Vector3
+                                                   eps=eps, z_dir=z_dir_before)
             dst_b4 = pp_dst + pp_dst_intrsct
             ray.append([before_pt, before_dir, dst_b4, before_normal])
 
             if in_surface_range(surf):
-                opl += before[3] * dst_b4  # before[Indx]
+                opl += before[Indx] * dst_b4
 
             normal: Vector3 = ifc.normal(inc_pt)
 
@@ -208,7 +208,7 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
             # if the interface has a phase element, process that first
             if hasattr(ifc, 'phase_element'):
                 doe_dir, phs = phase(ifc, inc_pt, b4_dir, normal, z_dir_before,
-                                     wvl, before[3], after[3])  #  before[Indx], after[Indx]
+                                     wvl, before[Indx], after[Indx])
                 # the output of the phase element becomes the input for the
                 #  refraction/reflection calculation
                 b4_dir = doe_dir
@@ -218,7 +218,7 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
             if ifc.interact_mode == 'reflect':
                 after_dir = reflect(b4_dir, normal)
             elif ifc.interact_mode == 'transmit':
-                after_dir = bend(b4_dir, normal, before[3], after[3])   # Indx = 3
+                after_dir = bend(b4_dir, normal, before[Indx], after[Indx])
             elif ifc.interact_mode == 'dummy':
                 after_dir = b4_dir
             else:  # no action, input becomes output
@@ -235,9 +235,9 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
                 eic_dst_after: float = eic_distance_from_axis((inc_pt, after_dir),
                                                        z_dir_after)
 
-                dW: float = after[3]*eic_dst_after - before[3]*eic_dst_before  # Indx = 3
-                eic.append([before[3], eic_dst_before,
-                            after[3], eic_dst_after, dW])            # Indx = 3
+                dW: float = after[Indx]*eic_dst_after - before[Indx]*eic_dst_before
+                eic.append([before[Indx], eic_dst_before,
+                            after[Indx], eic_dst_after, dW])
                 if in_surface_range(surf, include_last_surf=True):
                     opl_eic += dW
     
@@ -246,7 +246,7 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
                     print("e{}= {:12.5g} e{}'= {:12.5g} dW={:10.8g} n={:8.5g}"
                           " n'={:8.5g} zdb4={:2.0f} zdaft={:2.0f}"
                           .format(surf, eic_dst_before, surf, eic_dst_after,
-                                  dW, before[3], after[3],            # Indx = 3
+                                  dW, before[Indx], after[Indx],
                                   z_dir_before, z_dir_after))
 
             before_pt = inc_pt
@@ -254,13 +254,13 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
             before_dir = after_dir
             z_dir_before = z_dir_after
             before = after
-            tfrm_from_before = before[2]    # Tfrm = 2
+            tfrm_from_before = before[Tfrm]
 
         except TraceMissedSurfaceError as ray_miss:
             ray.append([before_pt, before_dir, pp_dst, before_normal])
             ray_miss.surf = surf+1
             ray_miss.ifc = ifc
-            ray_miss.prev_tfrm = before[2]   # Tfrm
+            ray_miss.prev_tfrm = before[Tfrm]
             ray_miss.ray_pkg = ray, opl, wvl
             raise ray_miss
 
@@ -343,8 +343,8 @@ def eic_distance_from_axis(r: Tuple[Vector3, Vector3], z_dir: ZDir) -> float:
         float: distance along r from equally inclined chord point to p
     """
     # eq 3.20/3.21
-    e = ((np.dot(r[0], r[1]) + z_dir*r[0][2]) /    # mc.p = 0, mc.d = 1
-         (1.0 + z_dir*r[1][2]))
+    e = ((np.dot(r[mc.p], r[mc.d]) + z_dir*r[mc.p][2]) /
+         (1.0 + z_dir*r[mc.d][2]))
     return e
 
 
