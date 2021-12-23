@@ -9,8 +9,13 @@
 """
 import math
 from collections import namedtuple
+from typing import Optional, Iterator, Tuple, List
+
 from rayoptics.optical.model_constants import ht, slp, aoi
 from rayoptics.parax.idealimager import ideal_imager_setup
+from rayoptics.seq.gap import Gap
+from rayoptics.seq.interface import Interface
+from rayoptics.typing import Transform3, ZDir
 
 ParaxData = namedtuple('ParaxData', ['ax_ray', 'pr_ray', 'fod'])
 ParaxData.ax_ray.__doc__ = "axial marginal ray data, y, u, i"
@@ -107,28 +112,33 @@ class FirstOrderData:
 
 # paraxial_trace() - This routine performs a paraxial raytrace from object
 #                    (surface 0) to image.
-def paraxial_trace(path, start, start_yu, start_yu_bar):
+def paraxial_trace(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]], start: int, start_yu: List[float], start_yu_bar: List[float]) -> Tuple[List[List[float]], List[List[float]]]:
     """ perform a paraxial raytrace of 2 linearly independent rays """
-    p_ray = []
-    p_ray_bar = []
+    p_ray: List[List[float]] = []
+    p_ray_bar: List[List[float]] = []
+
+    b4_ifc: Interface
+    b4_gap: Gap
+    b4_rndx: float
+    z_dir_before: ZDir
 
     b4_ifc, b4_gap, _, b4_rndx, z_dir_before = next(path)
-    n_before = b4_rndx if z_dir_before > 0 else -b4_rndx
+    n_before: float = b4_rndx if z_dir_before > 0 else -b4_rndx
 
-    b4_yui = start_yu
-    b4_yui_bar = start_yu_bar
+    b4_yui: List[float] = start_yu
+    b4_yui_bar: List[float] = start_yu_bar
     if start == 1:
         # compute object coords from 1st surface data
-        t0 = b4_gap.thi
+        t0: float = b4_gap.thi
         obj_ht = start_yu[ht] - t0*start_yu[slp]
         obj_htb = start_yu_bar[ht] - t0*start_yu_bar[slp]
         b4_yui = [obj_ht, start_yu[slp]]
         b4_yui_bar = [obj_htb, start_yu_bar[slp]]
 
-    cv = b4_ifc.profile_cv
+    cv: float = b4_ifc.profile_cv
     # calculate angle of incidence (aoi)
-    aoi = b4_yui[slp] + b4_yui[ht] * cv
-    aoi_bar = b4_yui_bar[slp] + b4_yui_bar[ht] * cv
+    aoi: float = b4_yui[slp] + b4_yui[ht] * cv
+    aoi_bar: float = b4_yui_bar[slp] + b4_yui_bar[ht] * cv
     b4_yui.append(aoi)
     b4_yui_bar.append(aoi_bar)
 
@@ -138,24 +148,31 @@ def paraxial_trace(path, start, start_yu, start_yu_bar):
     # loop over remaining surfaces in path
     while True:
         try:
+            ifc: Interface
+            gap: Gap
+            rndx: float
+            z_dir_after: ZDir
+
             ifc, gap, _, rndx, z_dir_after = next(path)
 
             # Transfer
-            t = b4_gap.thi
-            cur_ht = b4_yui[ht] + t * b4_yui[slp]
-            cur_htb = b4_yui_bar[ht] + t * b4_yui_bar[slp]
+            t: float = b4_gap.thi
+            cur_ht: float = b4_yui[ht] + t * b4_yui[slp]
+            cur_htb: float = b4_yui_bar[ht] + t * b4_yui_bar[slp]
 
             # Refraction/Reflection
+            cur_slp: float
+            cur_slpb: float
             if ifc.interact_mode == 'dummy':
                 cur_slp = b4_yui[slp]
                 cur_slpb = b4_yui_bar[slp]
             else:
-                n_after = rndx if z_dir_after > 0 else -rndx
+                n_after: float = rndx if z_dir_after > 0 else -rndx
 
-                k = n_before/n_after
+                k: float = n_before/n_after
     
                 # calculate slope after refraction/reflection
-                pwr = ifc.optical_power
+                pwr: float = ifc.optical_power
                 cur_slp = k * b4_yui[slp] - cur_ht * pwr/n_after
                 cur_slpb = k * b4_yui_bar[slp] - cur_htb * pwr/n_after
 
@@ -184,21 +201,21 @@ def paraxial_trace(path, start, start_yu, start_yu_bar):
     return p_ray, p_ray_bar
 
 
-def compute_first_order(opt_model, stop, wvl):
+def compute_first_order(opt_model, stop: Optional[int], wvl: float):
     """ Returns paraxial axial and chief rays, plus first order data. """
     seq_model = opt_model.seq_model
     start = 1
-    n_0 = seq_model.z_dir[start-1]*seq_model.central_rndx(start-1)
-    uq0 = 1/n_0
+    n_0: float = seq_model.z_dir[start-1]*seq_model.central_rndx(start-1)
+    uq0: float = 1/n_0
     p_ray, q_ray = paraxial_trace(seq_model.path(wl=wvl), start,
                                   [1., 0.], [0., uq0])
 
     n_k: float = seq_model.z_dir[-1]*seq_model.central_rndx(-1)
-    img = -2 if seq_model.get_num_surfaces() > 2 else -1
-    ak1 = p_ray[img][ht]
-    bk1 = q_ray[img][ht]
-    ck1 = n_k*p_ray[img][slp]
-    dk1 = n_k*q_ray[img][slp]
+    img: int = -2 if seq_model.get_num_surfaces() > 2 else -1
+    ak1: float = p_ray[img][ht]
+    bk1: float = q_ray[img][ht]
+    ck1: float = n_k*p_ray[img][slp]
+    dk1: float = n_k*q_ray[img][slp]
 
     # print(p_ray[-2][ht], q_ray[-2][ht], n_k*p_ray[-2][slp], n_k*q_ray[-2][slp])
     # print(ak1, bk1, ck1, dk1)
@@ -217,11 +234,11 @@ def compute_first_order(opt_model, stop, wvl):
             stop = 1
 
     if stop:
-        n_s = seq_model.z_dir[stop]*seq_model.central_rndx(stop)
-        as1 = p_ray[stop][ht]
-        bs1 = q_ray[stop][ht]
-        cs1 = n_s*p_ray[stop][slp]
-        ds1 = n_s*q_ray[stop][slp]
+        n_s: float = seq_model.z_dir[stop]*seq_model.central_rndx(stop)
+        as1: float = p_ray[stop][ht]
+        bs1: float = q_ray[stop][ht]
+        cs1: float = n_s*p_ray[stop][slp]
+        ds1: float = n_s*q_ray[stop][slp]
 
         # find entrance pupil location w.r.t. first surface
         ybar1 = -bs1
@@ -235,7 +252,6 @@ def compute_first_order(opt_model, stop, wvl):
         red = dk1 + thi0*ck1
         obj2enp_dist = thi0 + enp_dist
 
-        yu = [0., 1.]
         pupil = opt_model.optical_spec.pupil
         aperture, obj_img_key, value_key = pupil.key
         if obj_img_key == 'object':
@@ -254,7 +270,6 @@ def compute_first_order(opt_model, stop, wvl):
                 slp0 = slpk/red
         yu = [0., slp0]
 
-        yu_bar = [1., 0.]
         fov = opt_model.optical_spec.field_of_view
         field, obj_img_key, value_key = fov.key
         max_fld, fn = fov.max_field()

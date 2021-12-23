@@ -123,7 +123,7 @@ class SequentialModel:
     def get_num_surfaces(self):
         return len(self.ifcs)
 
-    def path(self, wl=None, start=None, stop=None, step=1) -> Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]]:
+    def path(self, wl: float = None, start: Optional[int] = None, stop: Optional[int] = None, step: int = 1) -> Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]]:
         """ returns an iterable path tuple for a range in the sequential model
 
         Args:
@@ -194,28 +194,28 @@ class SequentialModel:
                                      z_dir)
         return path
 
-    def calc_ref_indices_for_spectrum(self, wvls):
-        """ returns a list with refractive indices for all **wvls**
+    def calc_ref_indices_for_spectrum(self, wvls: List[float]) -> List[List[float]]:
+        """ returns a list with refractive indices for all **wvls** for each gap
 
         Args:
             wvls: list of wavelengths in nm
         """
-        indices = []
+        indices: List[List[float]] = []
         for g in self.gaps:
-            ri = []
-            mat = g.medium
+            ri: List[float] = []
+            mat: m.Medium = g.medium
             for w in wvls:
-                rndx = mat.rindex(w)
+                rndx: float = mat.rindex(w)
                 ri.append(rndx)
             indices.append(ri)
 
         return indices
 
-    def central_wavelength(self):
+    def central_wavelength(self) -> float:
         """ returns the central wavelength in nm of the model's ``WvlSpec`` """
         return self.opt_model.optical_spec.spectral_region.central_wvl
 
-    def index_for_wavelength(self, wvl):
+    def index_for_wavelength(self, wvl: float) -> int:
         """ returns index into rndx array for wavelength `wvl` in nm """
         self.wvlns = self.opt_model.optical_spec.spectral_region.wavelengths
         return self.wvlns.index(wvl)
@@ -416,7 +416,7 @@ class SequentialModel:
         # delta n across each surface interface must be set to some
         #  reasonable default value. use the index at the central wavelength
         osp = self.opt_model.optical_spec
-        ref_wl = osp.spectral_region.reference_wvl
+        ref_wl: int = osp.spectral_region.reference_wvl
 
         self.wvlns = osp.spectral_region.wavelengths
         self.rndx = self.calc_ref_indices_for_spectrum(self.wvlns)
@@ -425,7 +425,7 @@ class SequentialModel:
         self.z_dir = []
         z_dir_before = 1
 
-        seq = itertools.zip_longest(self.ifcs, self.gaps)
+        seq: Iterator[Tuple[Interface, Gap]] = itertools.zip_longest(self.ifcs, self.gaps)
 
         for i, sg in enumerate(seq):
             ifc, g = sg
@@ -559,7 +559,7 @@ class SequentialModel:
         for i, gp in enumerate(self.gaps):
             print(i, gp)
 
-    def list_surfaces(self):
+    def list_surfaces(self) -> None:
         for i, s in enumerate(self.ifcs):
             print(i, s)
 
@@ -816,9 +816,9 @@ class SequentialModel:
     def trace(self, pt0, dir0, wvl, **kwargs):
         return rt.trace(self, pt0, dir0, wvl, **kwargs)
 
-    def compute_global_coords(self, glo=1):
+    def compute_global_coords(self, glo=1) -> List[Transform3]:
         """ Return global surface coordinates (rot, t) wrt surface glo. """
-        tfrms = []
+        tfrms: List[Transform3] = []
         r, t = np.identity(3), np.array([0., 0., 0.])
         prev = r, t
         tfrms.append(prev)
@@ -826,7 +826,7 @@ class SequentialModel:
             # iterate in reverse over the segments before the
             #  global reference surface
             step = -1
-            seq = itertools.zip_longest(self.ifcs[glo::step],
+            seq: Iterator[Tuple[Interface, Gap]] = itertools.zip_longest(self.ifcs[glo::step],
                                         self.gaps[glo-1::step])
             ifc, gap = after = next(seq)
             # loop of remaining surfaces in path
@@ -863,9 +863,9 @@ class SequentialModel:
     
         return tfrms
 
-    def compute_local_transforms(self, seq=None, step=1):
+    def compute_local_transforms(self, seq=None, step=1) -> List[Transform3]:
         """ Return forward surface coordinates (r.T, t) for each interface. """
-        tfrms = []
+        tfrms: List[Transform3] = []
         if seq is None:
             seq = itertools.zip_longest(self.ifcs[::step],
                                         self.gaps[::step])

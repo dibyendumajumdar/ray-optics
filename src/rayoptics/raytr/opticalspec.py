@@ -145,8 +145,8 @@ class OpticalSpecs:
         self.spectral_region.update_model(**kwargs)
         self.pupil.update_model(**kwargs)
         self.field_of_view.update_model(**kwargs)
-        stop = self.opt_model.seq_model.stop_surface
-        wvl = self.spectral_region.central_wvl
+        stop: Optional[int] = self.opt_model.seq_model.stop_surface
+        wvl: float = self.spectral_region.central_wvl
 
         if self.opt_model.seq_model.get_num_surfaces() > 2:
             self.parax_data = compute_first_order(self.opt_model, stop, wvl)
@@ -207,7 +207,7 @@ class WvlSpec:
         self.coating_wvl = 550.0
 
     @property
-    def central_wvl(self):
+    def central_wvl(self) -> float:
         return self.wavelengths[self.reference_wvl]
 
     @central_wvl.setter

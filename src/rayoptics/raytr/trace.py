@@ -11,6 +11,8 @@
 import itertools
 import logging
 import math
+from typing import Optional
+
 import numpy as np
 from numpy.linalg import norm
 from scipy.optimize import newton, fsolve
@@ -25,7 +27,7 @@ from .analyses import (wave_abr_full_calc,
 from rayoptics.optical import model_constants as mc
 from .traceerror import TraceError, TraceMissedSurfaceError, TraceTIRError
 from rayoptics.util.misc_math import normalize
-
+from ..typing import Vector2
 
 RayPkg = namedtuple('RayPkg', ['ray', 'op', 'wvl'])
 RayPkg.__doc__ = "Ray and optical path length, plus wavelength"
@@ -162,7 +164,7 @@ def trace_base(opt_model, pupil, fld, wvl, **kwargs):
     return rt.trace(opt_model.seq_model, pt0, dir0, wvl, **kwargs)
 
 
-def iterate_ray(opt_model, ifcx, xy_target, fld, wvl, **kwargs):
+def iterate_ray(opt_model, ifcx: Optional[int], xy_target: Vector2, fld, wvl: float, **kwargs) -> Vector2:
     """ iterates a ray to xy_target on interface ifcx, returns aim points on
     the paraxial entrance pupil plane
 
@@ -170,7 +172,7 @@ def iterate_ray(opt_model, ifcx, xy_target, fld, wvl, **kwargs):
 
     If the iteration fails, a TraceError will be raised
     """
-    def y_stop_coordinate(y1, *args):
+    def y_stop_coordinate(y1: float, *args) -> float:
         seq_model, ifcx, pt0, dist, wvl, y_target = args
         pt1 = np.array([0., y1, dist])
         dir0 = pt1 - pt0
@@ -190,7 +192,7 @@ def iterate_ray(opt_model, ifcx, xy_target, fld, wvl, **kwargs):
 #        print(y1, y_ray)
         return y_ray - y_target
 
-    def surface_coordinate(coord, *args):
+    def surface_coordinate(coord: Vector2, *args) -> Vector2:
         seq_model, ifcx, pt0, dist, wvl, target = args
         pt1 = np.array([coord[0], coord[1], dist])
         dir0 = pt1 - pt0
@@ -206,6 +208,7 @@ def iterate_ray(opt_model, ifcx, xy_target, fld, wvl, **kwargs):
 
     fod = osp.parax_data.fod
     dist = fod.obj_dist + fod.enp_dist
+    start_coords: Vector2
 
     pt0 = osp.obj_coords(fld)
     if ifcx is not None:

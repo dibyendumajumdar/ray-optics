@@ -56,6 +56,7 @@ class Interface:
         self.delta_n: float = delta_n
         self.decenter = decenter
         self.max_aperture: float = max_ap
+        # self.profile is assumed to be present in code (TODO type hint)
         if phase_element is not None:
             self.phase_element = phase_element
 
@@ -88,6 +89,10 @@ class Interface:
 
     @property
     def profile_cv(self) -> float:
+        return 0.0
+
+    @property
+    def optical_power(self) -> float:
         return 0.0
 
     def set_optical_power(self, pwr: float, n_before: float, n_after: float) -> None:
