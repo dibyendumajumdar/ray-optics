@@ -252,6 +252,7 @@ def compute_first_order(opt_model, stop: Optional[int], wvl: float):
         red = dk1 + thi0*ck1
         obj2enp_dist = thi0 + enp_dist
 
+        slp0 = 1.
         pupil = opt_model.optical_spec.pupil
         aperture, obj_img_key, value_key = pupil.key
         if obj_img_key == 'object':
@@ -270,6 +271,8 @@ def compute_first_order(opt_model, stop: Optional[int], wvl: float):
                 slp0 = slpk/red
         yu = [0., slp0]
 
+        ybar0 = 1.
+        slpbar0 = 0.
         fov = opt_model.optical_spec.field_of_view
         field, obj_img_key, value_key = fov.key
         max_fld, fn = fov.max_field()
