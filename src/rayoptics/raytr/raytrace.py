@@ -21,7 +21,7 @@ from .traceerror import (TraceMissedSurfaceError, TraceTIRError,
                          TraceEvanescentRayError)
 from ..seq.gap import Gap
 from ..seq.interface import Interface
-from ..typing import Vector3, Transform3, ZDir, Matrix3
+from ..typing import Vector3, Transform3, ZDir, Matrix3, Direction3
 
 
 def bend(d_in: Vector3, normal: Vector3, n_in: float, n_out: float) -> Vector3:
@@ -55,7 +55,7 @@ def phase(ifc: Interface, inc_pt: Vector3, d_in: Vector3, normal: Vector3, z_dir
         raise TraceEvanescentRayError(ifc, inc_pt, d_in, normal, n_in, n_out)
 
 
-def trace(seq_model, pt0: Vector3, dir0: Vector3, wvl: float, **kwargs):
+def trace(seq_model, pt0: Vector3, dir0: Vector3, wvl: float, **kwargs) -> Tuple[List[List[float]], float, float]:
     """ fundamental raytrace function
 
     Args:
@@ -92,8 +92,8 @@ def trace_raw(path: Iterator[Tuple[Interface, Gap, Transform3, float, ZDir]],
               pt0: Vector3,
               dir0: Vector3,
               wvl: float,
-              eps: float=1.0e-12,
-              **kwargs):
+              eps: float = 1.0e-12,
+              **kwargs) -> Tuple[List[List[float]], float, float]:
     """ fundamental raytrace function
 
     Args:
@@ -348,7 +348,7 @@ def eic_distance_from_axis(r: Tuple[Vector3, Vector3], z_dir: ZDir) -> float:
     return e
 
 
-def transfer_to_exit_pupil(interface, ray_seg, exp_dst_parax):
+def transfer_to_exit_pupil(interface: Interface, ray_seg: Tuple[Vector3, Direction3], exp_dst_parax: float) -> Tuple[Vector3, Direction3, float, Interface, Vector3, Direction3]:
     """Given the exiting interface and chief ray data, return exit pupil ray coords.
 
     Args:

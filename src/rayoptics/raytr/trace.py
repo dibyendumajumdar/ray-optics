@@ -11,7 +11,7 @@
 import itertools
 import logging
 import math
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import numpy as np
 from numpy.linalg import norm
@@ -27,7 +27,7 @@ from .analyses import (wave_abr_full_calc,
 from rayoptics.optical import model_constants as mc
 from .traceerror import TraceError, TraceMissedSurfaceError, TraceTIRError
 from rayoptics.util.misc_math import normalize
-from ..typing import Vector2
+from ..typing import Vector2, Vector3, Direction3
 
 RayPkg = namedtuple('RayPkg', ['ray', 'op', 'wvl'])
 RayPkg.__doc__ = "Ray and optical path length, plus wavelength"
@@ -93,7 +93,7 @@ def list_ray(ray_obj, tfrms=None, start=0):
                                     r[mc.dst]))
 
 
-def trace(seq_model, pt0, dir0, wvl, **kwargs):
+def trace(seq_model, pt0: Vector3, dir0: Direction3, wvl: float, **kwargs) -> Tuple[List[List[float]], float, float]:
     """ returns (ray, ray_opl, wvl)
 
     Args:
@@ -122,7 +122,7 @@ def trace(seq_model, pt0, dir0, wvl, **kwargs):
     return rt.trace(seq_model, pt0, dir0, wvl, **kwargs)
 
 
-def trace_base(opt_model, pupil, fld, wvl, **kwargs):
+def trace_base(opt_model, pupil: List[float], fld, wvl, **kwargs) -> Tuple[List[List[float]], float, float]:
     """Trace ray specified by relative aperture and field point.
 
     Args:
@@ -148,10 +148,10 @@ def trace_base(opt_model, pupil, fld, wvl, **kwargs):
           optical axis
         - **wvl** - wavelength (in nm) that the ray was traced in
     """
-    vig_pupil = fld.apply_vignetting(pupil)
+    vig_pupil: List[float] = fld.apply_vignetting(pupil)
     osp = opt_model.optical_spec
     fod = osp.parax_data.fod
-    eprad = fod.enp_radius
+    eprad: float = fod.enp_radius
     aim_pt = np.array([0., 0.])
     if hasattr(fld, 'aim_pt') and fld.aim_pt is not None:
         aim_pt = fld.aim_pt

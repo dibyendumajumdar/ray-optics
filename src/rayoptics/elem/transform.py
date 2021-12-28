@@ -7,11 +7,12 @@
 
 .. codeauthor: Michael J. Hayford
 """
+from typing import Tuple
 
 import numpy as np
 
 from rayoptics.seq.interface import Interface
-from rayoptics.typing import Transform3
+from rayoptics.typing import Transform3, Vector3, Direction3
 
 
 def forward_transform(s1: Interface, zdist: float, s2: Interface) -> Transform3:
@@ -88,7 +89,7 @@ def transfer_coords(r_seg, t_seg, pt_s1, dir_s1):
     return rt.dot(pt_s1 - t_seg), rt.dot(dir_s1)
 
 
-def transform_before_surface(interface: Interface, ray_seg):
+def transform_before_surface(interface: Interface, ray_seg: Tuple[Vector3, Direction3]) -> Tuple[Vector3, Direction3]:
     """Transform ray_seg from interface to previous seg.
 
     Args:
@@ -115,7 +116,7 @@ def transform_before_surface(interface: Interface, ray_seg):
     return b4_pt, b4_dir
 
 
-def transform_after_surface(interface: Interface, ray_seg):
+def transform_after_surface(interface: Interface, ray_seg: Tuple[Vector3, Direction3]) -> Tuple[Vector3, Direction3]:
     """Transform ray_seg from interface to following seg.
 
     Args:

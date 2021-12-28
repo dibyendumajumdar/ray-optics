@@ -9,7 +9,7 @@
 """
 
 import math
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict
 
 import numpy as np
 
@@ -360,6 +360,7 @@ class Field:
         self.aim_pt: Vector2 = None
         self.chief_ray = None
         self.ref_sphere = None
+        self.pupil_rays: Dict = None  # See trace.trace_boundary_rays()
 
     def __json_encode__(self):
         attrs = dict(vars(self))
@@ -379,7 +380,7 @@ class Field:
         self.chief_ray = None
         self.ref_sphere = None
 
-    def apply_vignetting(self, pupil):
+    def apply_vignetting(self, pupil: List[float]):
         vig_pupil = pupil[:]
         if pupil[0] < 0.0:
             if self.vlx != 0.0:
