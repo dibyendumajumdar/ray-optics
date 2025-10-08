@@ -987,7 +987,7 @@ def create_surface_and_gap(surf_data, radius_mode: bool = False, prev_medium: Op
                 if surf_data[2] == 1.0:
                     mat = m.Air()
                 else:
-                    mat = m.Glass(surf_data[2], surf_data[3], '')
+                    mat = m.Medium(surf_data[2])  # m.Glass(surf_data[2], surf_data[3], '')
 
         else:  # string args
             if surf_data[2].upper() == 'REFL':

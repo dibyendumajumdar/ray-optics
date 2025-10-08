@@ -33,3 +33,5 @@ _templates
 
 # Testing
 *.xlsx
+
+__pycache__

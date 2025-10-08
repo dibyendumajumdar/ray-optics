@@ -313,38 +313,38 @@ class RayBundle():
             tfrms[0] = (rot, t)
             shift_start_of_ray_bundle(start_bundle, ray_list, rot, t)
 
-        try:
-            if view.do_draw_beams:
-                poly, bbox = self.render_shape(self.rayset,
-                                               start_bundle, tfrms)
-
-                p = view.create_polygon(poly, fill_color=lo_rgb['rayfan_fill'])
-                self.handles['shape'] = GUIHandle(p, bbox)
-
-            if view.do_draw_edge_rays:
-                cr = self.render_ray(self.rayset['00'].ray,
-                                     start_bundle[0], tfrms)
-                upr = self.render_ray(self.rayset['+Y'].ray,
-                                      start_bundle[3], tfrms)
-                lwr = self.render_ray(self.rayset['-Y'].ray,
-                                      start_bundle[4], tfrms)
-                kwargs = {
-                    'linewidth': lo_lw['line'],
-                    'color': lo_rgb['ray'],
-                    'hilite_linewidth': lo_lw['hilite'],
-                    'hilite': lo_rgb['ray'],
-                    }
-                cr_poly = view.create_polyline(cr, **kwargs)
-                self.handles['00'] = GUIHandle(cr_poly, bbox_from_poly(cr))
-        
-                upr_poly = view.create_polyline(upr, **kwargs)
-                self.handles['+Y'] = GUIHandle(upr_poly, bbox_from_poly(upr))
-        
-                lwr_poly = view.create_polyline(lwr, **kwargs)
-                self.handles['-Y'] = GUIHandle(lwr_poly, bbox_from_poly(lwr))
-
-        finally:
-            tfrms[0] = tfrtm0
+        # try:
+        #     if view.do_draw_beams:
+        #         poly, bbox = self.render_shape(self.rayset,
+        #                                        start_bundle, tfrms)
+        #
+        #         p = view.create_polygon(poly, fill_color=lo_rgb['rayfan_fill'])
+        #         self.handles['shape'] = GUIHandle(p, bbox)
+        #
+        #     if view.do_draw_edge_rays:
+        #         cr = self.render_ray(self.rayset['00'].ray,
+        #                              start_bundle[0], tfrms)
+        #         upr = self.render_ray(self.rayset['+Y'].ray,
+        #                               start_bundle[3], tfrms)
+        #         lwr = self.render_ray(self.rayset['-Y'].ray,
+        #                               start_bundle[4], tfrms)
+        #         kwargs = {
+        #             'linewidth': lo_lw['line'],
+        #             'color': lo_rgb['ray'],
+        #             'hilite_linewidth': lo_lw['hilite'],
+        #             'hilite': lo_rgb['ray'],
+        #             }
+        #         cr_poly = view.create_polyline(cr, **kwargs)
+        #         self.handles['00'] = GUIHandle(cr_poly, bbox_from_poly(cr))
+        #
+        #         upr_poly = view.create_polyline(upr, **kwargs)
+        #         self.handles['+Y'] = GUIHandle(upr_poly, bbox_from_poly(upr))
+        #
+        #         lwr_poly = view.create_polyline(lwr, **kwargs)
+        #         self.handles['-Y'] = GUIHandle(lwr_poly, bbox_from_poly(lwr))
+        #
+        # finally:
+        #     tfrms[0] = tfrtm0
 
         return self.handles
 

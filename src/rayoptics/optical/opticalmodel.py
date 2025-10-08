@@ -60,7 +60,7 @@ class SystemSpec:
         self._dimensions = (value if isinstance(value, str)
                             else get_dimension_for_type(value))
 
-    def nm_to_sys_units(self, nm):
+    def nm_to_sys_units(self, nm: float) -> float:
         """ convert nm to system units
 
         Args:
